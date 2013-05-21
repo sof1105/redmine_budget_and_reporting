@@ -1,5 +1,5 @@
 
-module Gantchart_spenthours
+module Redmine_budget_and_reporting
 
     class SpenthoursHooks < Redmine::Hook::ViewListener
         def controller_issues_edit_before_save(context = {})
