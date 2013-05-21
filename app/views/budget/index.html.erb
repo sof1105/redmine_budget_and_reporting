@@ -47,6 +47,13 @@
   <div class="budget_individual_container">
     <div class="budget_container_heading">Einzelkosten</div>
   </div>
+  
+  <%= @indiviual_costs.each do |item| %>
+    <div class="budget_individual_container">
+      <div class="budget_individual_label"><%= item.label %></div>
+      <div class="budget_individual_costs"><%= item.costs %></div>
+    </div>
+  <% end %>
 </div>
 
 <div id="budget_floating">

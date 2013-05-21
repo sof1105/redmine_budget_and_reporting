@@ -7,13 +7,13 @@ class BudgetController < ApplicationController
     # show actual budget for project
     @overall_costs = {}
     @costs_per_issue = {}
-    @individual_costs = {}
+    @individual_costs = []
   
     # the overall costs of the project ---------------------------------------------------
     @overall_costs[:planned] = PlannedBudget.where(:project_id => @project.id).order("created_on DESC").first
     @overall_costs[:forecast] = ProjectbudgetForecast.where(:project_id => @project.id).order("planned_date DESC").first
+    @overall_costs[:individual] = IndividualItem.util(Date.today, @project.i).sum(:costs)
     @overall_costs[:issues] = 0
-    @overall_costs[:individual] = 0
     
     salary_custom_id = UserCustomField.where(:name => "Gehalt").first.id
     
@@ -21,7 +21,7 @@ class BudgetController < ApplicationController
     all_timelogs.each do |entry|
       @overall_costs[:issues] += costs_for_TimeEntry(entry, salary_custom_id)
     end
-    #TODO: add individual items cost
+    
     
     
     # costs per issue -------------------------------------------------------------------
@@ -42,7 +42,7 @@ class BudgetController < ApplicationController
     
     
     # individual costs ---------------------------------------------------------------------
-    # TODO: add individual costs
+    @indiviual_costs = IndividualItem.for_month(Date.today, @project.id)
   
   end
   
