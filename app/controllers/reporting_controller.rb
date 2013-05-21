@@ -8,6 +8,10 @@ class ReportingController < ApplicationController
     
   end
   
+  def choose_gan_file
+  
+  end
+  
   def upload_gan_file
     # upload a new gan file
     

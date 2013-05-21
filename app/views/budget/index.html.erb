@@ -1,1 +1,53 @@
-<h2>Budget Report for <%= @project.name %></h2>
+<%= stylesheet_link_tag "budget_and_reporting", :plugin=>"redmine_budget_and_reporting" %>
+
+<h2>Budget Report für <%= @project.name %></h2>
+
+<div class="budget_container">
+  <table>
+    <tr>
+      <td>Geplannt:</td>
+      <td><%= @overall_costs[:planned].nil? ? "Budget bisher nicht geplannt" :
+          number_to_currency(@overall_costs[:planned].budget) %></td>
+    </tr>
+    <tr>
+      <td>Prognose: <%= @overall_costs[:forecast].nil? ? "" : "vom " + I18n.l(@overall_costs[:forecast].planned_date) %></td>
+      <td><%= @overall_costs[:forecast].nil? ? "Keine Prognose vorhanden" : 
+          number_to_currency(@overall_costs[:forecast]) %></td>
+    </tr>
+    <tr>
+      <td>IST-Wert:</td>
+      <td><%= number_to_currency(@overall_costs[:issues] + @overall_costs[:individual]) %></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><i>(<%= number_to_currency(@overall_costs[:issues]) %> Personal +
+         <%= number_to_currency(@overall_costs[:individual]) %> Material)
+      </i></td>
+    </tr>
+  </table>
+</div>
+
+<div class="budget_container">
+  <% @costs_per_issue.each do |version, issue_list| %>
+    <div class="budget_version_container">
+     <div class="budget_container_heading"> <%= version.nil?  ? " Ohne Meilenstein" : version.name%></div>      
+      <% issue_list.each do |issue, total_costs| %>
+        <div class="budget_issue_container">
+          <div class="budget_issue_name"><%= issue.subject.truncate(20) %> </div>
+          <div class="budget_issue_progress"><%= line_for_issue_hours_progress(issue) %></div>
+          <div class="budget_issue_hours"><%= issue.spent_hours %> h </div>
+          <div class="budget_issue_costs"><%= number_to_currency(total_costs) %> </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="budget_container">
+  <div class="budget_individual_container">
+    <div class="budget_container_heading">Einzelkosten</div>
+  </div>
+</div>
+
+<div id="budget_floating">
+</div>

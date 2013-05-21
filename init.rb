@@ -8,13 +8,17 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
   
   
   
-  # TODO: add permission and menu bar
+  # make sure UserCustomField for salary exists
+  if UserCustomField.where(:name => "Gehalt").empty?
+    UserCustomField.create({:type => "UserCustomField", :name => "Gehalt", :field_format => "float", :default => "50"})
+  end
+  
   permission :budget_permission, {:budget => [:index]}, :public => true
   permission :reporting_permission, {:reporting => [:index]}, :public => true
   menu :project_menu, :budget, {:controller => 'budget', :action => 'index'},
     :caption => 'Budget', :param => :project_id
   
-  #require_dependency 'gantchart_spenthours/hooks'
+  require_dependency 'gantchart_spenthours/hooks'
   require_dependency 'sidebar/hooks'
   
   require 'dispatcher' unless Rails::VERSION::MAJOR >= 3

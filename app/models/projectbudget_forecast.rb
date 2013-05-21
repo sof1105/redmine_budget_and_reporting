@@ -4,7 +4,7 @@ class ProjectbudgetForecast < ActiveRecord::Base
   before_save :set_created_on_date
 
   def self.until(month, project_id)
-    where(:project_id => project_id, :planned_date <= month.end_of_month).order("planned_date DESC")
+    where("project_id = ? and planned_date <= ?", project_id, month.end_of_month).order("planned_date DESC")
   end
   
   def differenz(number_of_months)

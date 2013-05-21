@@ -1,0 +1,64 @@
+.budget_container{
+  border: 1px solid grey;
+  padding-left:8px;
+  margin-top:15px;
+}
+
+.budget_version_container{
+  padding-top: 8px;
+}
+
+.budget_container_heading{
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.budget_issue_container{
+  overflow:hidden;
+  margin-left:4px;
+  padding: 2px;
+}
+
+.budget_issue_name{
+  float:left;
+}
+
+.budget_issue_progress{
+  float:left;
+}
+
+.budget_issue_costs{
+  float:left;
+}
+
+.budget_issue_hours{
+  float: left;
+}
+
+.bar_outer{
+  width: 150px;
+  height: 12px;
+  border: 1px solid #000;
+  position: relative;
+}
+
+.bar_inner{
+  height: 12px;
+  position: absolute;
+}
+
+.bar_label{
+  width:100%;
+  position: absolute;
+  height: 12px;
+  text-align: center;
+  font-size: 11px;
+}
+
+.green{
+  background-color: #90EE90;
+}
+
+.red{
+  background-color: #FF5E5E; 
+}
