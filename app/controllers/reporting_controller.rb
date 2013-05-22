@@ -16,31 +16,54 @@ class ReportingController < ApplicationController
     # upload a new gan file
     
     unless params[:gan]
-      flash[:error] = "Keine Datei ausgewählt"
+      flash[:error] = "Keine Datei ausgewaehlt"
       redirect_to :controller => 'reporting', :action => 'choose_gan_file'
       return
     end
     
+    levels = params[:first_level_only].nil? ? -1 : 1
+    delete_old = params[:delete_old].nil? ? false : true
+    
     doc = Nokogiri::XML(params[:gan])
     
-    
-    
-    
-    versions = Version.where(:project_id => @project.id)
-    versions.each do |version|
-      version_xml = doc.xpath("//task[@name='"+version.name+"']")
-      update_node_from_xml(version_xml, [])
+    if !doc.errors.empty?
+      flash[:error] = "Dateiformat stimmt nicht"
+      puts doc.errors
+      redirect_to :controller => "reporting", :action => "choose_gan_file"
+      return
     end
     
+    # TODO: maybe validation check? version isn't allowed to be a child
+    #       of another version
+    
+    
+    ###
+    #versions = Version.where(:project_id => @project.id)
+    #issue_list = []
+    #versions.each do |version|
+    #  version_xml = doc.xpath("//task[@name='"+version.name+"']")
+    #  update_node_from_xml(version_xml, issue_list, levels)
+    #end
+    
+    # delete old issues if checkbox is true
+    if delete_old
+      new_issue_ids = issue_list.map {|i| i.id}
+      Issues.where("project_id = ? AND id NOT IN (?)", @project.id, new_issue_ids)
+    end
+    
+    # TODO: update Issue Relations
+    
+    redirect_to :controller => 'reporting', :action => 'choose_gan_file'
   end
   
-
+  
   
   
   # --------------- Helper methods --------------
   
   def update_node_from_xml(xml_node, issue_list, levels=1)
-    # updates or creates issues from an
+    # updates or creates issues which corresponds to xml_node's childs
+    # to a maximum depth of levels
     
     if xml_node.empty? || xml_node.children.empty? || levels == 0
       return
@@ -88,7 +111,7 @@ class ReportingController < ApplicationController
       update_node_from_xml(child, issue_list, levels-1)
       
     end
-     
+
   end
   
   

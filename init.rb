@@ -21,6 +21,7 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
   require_dependency 'gantchart_spenthours/hooks'
   require_dependency 'sidebar/hooks'
   
+  require 'nokogiri'
   require 'dispatcher' unless Rails::VERSION::MAJOR >= 3
    
 	if Rails::VERSION::MAJOR >= 3

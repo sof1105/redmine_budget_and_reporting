@@ -1,0 +1,8 @@
+<h2> Upload Gan-File </h2>
+
+<form action="<%= url_for({:controller => "reporting", :action => "upload_gan_file"}) %>" method="post" enctype="multipart/form-data">
+
+<input type="file" name="gan" accept=".gan">
+<input type="submit">
+
+</form>
