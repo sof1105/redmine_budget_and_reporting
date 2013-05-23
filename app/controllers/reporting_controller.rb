@@ -45,7 +45,7 @@ class ReportingController < ApplicationController
     versions.each do |version|
       version_xml = doc.xpath("//task[@name='"+version.name+"']")
       version_xml.first.children.each do |issue|
-        update_issue_from_xml(issue, issue_list, levels)
+        update_issue_from_xml(issue, version.id, issue_list, levels)
       end
     end
     
@@ -65,7 +65,7 @@ class ReportingController < ApplicationController
   
   # --------------- Helper methods --------------
   
-  def update_issue_from_xml(xml_node, issue_list, levels=1)
+  def update_issue_from_xml(xml_node, version, issue_list, levels=1)
     # updates or creates issues which corresponds to xml_nod
     # to a maximum depth of levels
     
@@ -94,10 +94,7 @@ class ReportingController < ApplicationController
     parent = Issue.where(:project_id => @project.id, :subject => xml_node.parent["name"]).first
     # (if parent = nil than its a root issue, because function moves down the xml tree
     # recursively a parent issue should have been created before 
-    
-    logger.info("name: " + xml_node["name"])
-    logger.info("parent: " + parent.to_s)
-    
+     
     corresponding_issues.each do |issue|
       # isolate issue from children
       issue.children.each do |i|
@@ -112,6 +109,8 @@ class ReportingController < ApplicationController
       issue.start_date = start_date
       issue.due_date = due_date
       issue.parent_issue_id = (parent.nil?) ? nil : parent.id
+      issue.fixed_version_id = version
+      
       unless issue.save
         issue.errors.each do |e|
           logger.info(e.to_s + "=>" + issue.errors[e].to_s)
@@ -128,7 +127,7 @@ class ReportingController < ApplicationController
     
     # update childs recursively (but after all childs a created)
     xml_node.children.each do |child|
-      update_issue_from_xml(child, issue_list, levels-1)
+      update_issue_from_xml(child, version, issue_list, levels-1)
     end
 
   end
