@@ -38,7 +38,7 @@ class ReportingController < ApplicationController
     # TODO: maybe validation check? version isn't allowed to be a child
     #       of another version
     
-    
+    logger.info("Username: " + User.current.name)
     
     versions = Version.where(:project_id => @project.id)
     issue_list = []
