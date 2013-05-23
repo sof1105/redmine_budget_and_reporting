@@ -24,7 +24,9 @@ class ReportingController < ApplicationController
     levels = params[:first_level_only].nil? ? -1 : 1
     delete_old = params[:delete_old].nil? ? false : true
     
-    doc = Nokogiri::XML(params[:gan])
+    doc = Nokogiri::XML(params[:gan]) do |config|
+      config.noblanks
+    end
     
     if !doc.errors.empty?
       flash[:error] = "Dateiformat stimmt nicht"
@@ -37,13 +39,15 @@ class ReportingController < ApplicationController
     #       of another version
     
     
-    ###
-    #versions = Version.where(:project_id => @project.id)
-    #issue_list = []
-    #versions.each do |version|
-    #  version_xml = doc.xpath("//task[@name='"+version.name+"']")
-    #  update_node_from_xml(version_xml, issue_list, levels)
-    #end
+    
+    versions = Version.where(:project_id => @project.id)
+    issue_list = []
+    versions.each do |version|
+      version_xml = doc.xpath("//task[@name='"+version.name+"']")
+      version_xml.first.children.each do |issue|
+        update_issue_from_xml(issue, issue_list, levels)
+      end
+    end
     
     # delete old issues if checkbox is true
     if delete_old
@@ -61,55 +65,70 @@ class ReportingController < ApplicationController
   
   # --------------- Helper methods --------------
   
-  def update_node_from_xml(xml_node, issue_list, levels=1)
-    # updates or creates issues which corresponds to xml_node's childs
+  def update_issue_from_xml(xml_node, issue_list, levels=1)
+    # updates or creates issues which corresponds to xml_nod
     # to a maximum depth of levels
     
-    if xml_node.empty? || xml_node.children.empty? || levels == 0
+    if !xml_node || xml_node.node_name != "task" ||  levels == 0
       return
     end
     
+    tracker_id = @project.trackers.first.id
     
-    xml_node.children.each do |child|
-      
-      # get issues or create a new (could be more than one, subject is not unique)
-      corresponding_issues = Issue.where(:project_id => @project.id, 
-          :subject => child["name"])
-      
-      if corresponding_issues.empty?
-        corresponding_issues = [Issues.new({:subject => child["name"]})]
+          
+    # get issues or create a new (could be more than one, subject is not unique)
+    corresponding_issues = Issue.where(:project_id => @project.id, 
+        :subject => xml_node["name"])
+    if corresponding_issues.empty?
+      corresponding_issues = [Issue.new({:project_id => @project.id, :subject => xml_node["name"],
+          :author_id => User.current.id, :tracker_id => tracker_id})]
+    end
+    
+    # isolate issue from relations
+    issues_ids = corresponding_issues.map {|i| i.id}
+    relation_ids = IssueRelation.where("issue_from_id IN (?) OR issue_to_id IN (?)",
+        issues_ids, issues_ids).map {|r| r.id}
+    IssueRelation.destroy(relation_ids)
+    
+    # find the new parent issue according to xml tree (either issue or version)
+    parent = Issue.where(:project_id => @project.id, :subject => xml_node.parent["name"]).first
+    # (if parent = nil than its a root issue, because function moves down the xml tree
+    # recursively a parent issue should have been created before 
+    
+    logger.info("name: " + xml_node["name"])
+    logger.info("parent: " + parent.to_s)
+    
+    corresponding_issues.each do |issue|
+      # isolate issue from children
+      issue.children.each do |i|
+        i.parent_issue_id = nil
+        i.save
       end
       
-      # isolate issue from relations
-      issues_ids = corresponding_issues.map {|i| i.id}
-      relation_ids = IssueRelation.where("issue_from_id IN (?) OR issue_to_id IN (?)",
-          issues_id, issues_id).map {|r| r.id}
-      IssueRelation.destroy(relation_ids)
+      # update issue with new attributs
+      start_date = Date.strptime((xml_node["start"]||Date.today.to_s), "%Y-%m-%d")
+      due_date = start_date + (xml_node["duration"].to_i || 1)
       
-      corresponding_issues.each do |issue|
-        # isolate issue from children
-        issue.children.each do |i|
-          i.parent_issue_id = nil
-          i.save
+      issue.start_date = start_date
+      issue.due_date = due_date
+      issue.parent_issue_id = (parent.nil?) ? nil : parent.id
+      unless issue.save
+        issue.errors.each do |e|
+          logger.info(e.to_s + "=>" + issue.errors[e].to_s)
         end
-        
-        # update issue with new attributs
-        start_date = Date.strptime(child["date"], "%Y-%m-%d")
-        due_date = startdate + child["duration"].to_i
-        issue.start_date = start_date
-        issue.due_date = due_date
-        journal = issue.init_journal(User.current, "Update mit Gan-File")
-        issue.save
-        journal.save
-        
-        # append issue from issue_list
-        issue_list.apppend(issue)
-        
       end
+      journal = issue.init_journal(User.current, "Update mit Gan-File")
+      journal.save
       
-      # update childs recursively
-      update_node_from_xml(child, issue_list, levels-1)
+      # append issue from issue_list
+      issue_list.append(issue)
       
+    end
+
+    
+    # update childs recursively (but after all childs a created)
+    xml_node.children.each do |child|
+      update_issue_from_xml(child, issue_list, levels-1)
     end
 
   end

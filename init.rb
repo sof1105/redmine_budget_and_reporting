@@ -10,7 +10,7 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
   
   # make sure UserCustomField for salary exists
   if UserCustomField.where(:name => "Gehalt").empty?
-    UserCustomField.create({:type => "UserCustomField", :name => "Gehalt", :field_format => "float", :default => "50"})
+    UserCustomField.create({:type => "UserCustomField", :name => "Gehalt", :field_format => "float", :default_value => "50"})
   end
   
   permission :budget_permission, {:budget => [:index]}, :public => true
