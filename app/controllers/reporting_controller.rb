@@ -8,12 +8,16 @@ class ReportingController < ApplicationController
     
   end
   
+  
+  
+  
+  
+  # upload new gan-file ---------------------------------
   def choose_gan_file
   
   end
   
   def upload_gan_file
-    # upload a new gan file
     
     unless params[:gan]
       flash[:error] = "Keine Datei ausgewaehlt"
@@ -38,8 +42,7 @@ class ReportingController < ApplicationController
     # TODO: maybe validation check? version isn't allowed to be a child
     #       of another version
     
-    logger.info("Username: " + User.current.name)
-    
+      
     versions = Version.where(:project_id => @project.id)
     issue_list = []
     versions.each do |version|

@@ -28,11 +28,13 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
 		ActionDispatch::Callbacks.to_prepare do
 			# use require_dependency if you plan to utilize development mode
 			require 'patches/GanttchartPatch'
+      			require 'patches/ProjectInclude'
 		end
 	else
 		Dispatcher.to_prepare BW_AssetHelpers::PLUGIN_NAME do
 			# use require_dependency if you plan to utilize development mode
 			require 'patches/GanttchartPatch'
+      			require 'patches/ProjectInclude'
 		end
 	end
   

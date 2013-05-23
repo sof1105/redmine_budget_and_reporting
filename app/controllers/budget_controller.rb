@@ -10,7 +10,7 @@ class BudgetController < ApplicationController
     @individual_costs = []
   
     # the overall costs of the project ---------------------------------------------------
-    @overall_costs[:planned] = PlannedBudget.where(:project_id => @project.id).order("created_on DESC").first
+    @overall_costs[:planned] = PlannedBudget.latest_budget_for(@project.id)
     @overall_costs[:forecast] = ProjectbudgetForecast.where(:project_id => @project.id).order("planned_date DESC").first
     @overall_costs[:individual] = IndividualItem.until(Date.today, @project.id).sum(:costs)
     @overall_costs[:issues] = 0
@@ -47,19 +47,38 @@ class BudgetController < ApplicationController
   end
   
   def show_individual_costs
-    # per month
+    # TODO: per month or all for project? and which format to respond?
   end
   
-  def show_issue_costs
-    
+  
+  def new_budget_plan
+    if not PlannedBudget.create({:project_id => @project.id, :budget => params[:budget].to_f, :created_on => Date.today})
+      flash[:error] = "Fehler beim speichern"
+    end
+    redirect_to :controller => "budget", :action => "index"
   end
   
+  def delete_budget_plan
+    if params[:budget_id] && PlannedBudget.exists?(params[:budget_id])
+      PlannedBudget.find(params[:budget_id]).destroy
+    else
+      # TODO: which format to response?
+    end
+    # TODO: which format to response?
+  end
+  
+  def show_all_budget_plans
+    budgets = PlannedBudget.where(:project_id => @project.id).order("created_on DESC")
+    # TODO: which format to response
+  end
+  
+  # process a csv file with individual costs -------------
   def upload_individual_costs
-  
+    # TODO: implement
   end
   
   def parse_individual_file
-  
+    # TODO: implement
   end
   
   # ------------ Helper methods --------------------
