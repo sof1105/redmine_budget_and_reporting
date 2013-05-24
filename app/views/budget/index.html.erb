@@ -2,6 +2,8 @@
 
 <h2>Budget Report für <%= @project.name %></h2>
 
+<div class="budget_heading">Übersicht</div>
+
 <div class="budget_container">
   <table>
     <tr>
@@ -21,40 +23,61 @@
     <tr>
       <td></td>
       <td><i>(<%= number_to_currency(@overall_costs[:issues]) %> Personal +
-         <%= number_to_currency(@overall_costs[:individual]) %> Material)
+         <%= number_to_currency(@overall_costs[:individual]) %> Einzelkosten)
       </i></td>
     </tr>
   </table>
 </div>
 
-<div class="budget_container">
-  <% @costs_per_issue.each do |version, issue_list| %>
-    <div class="budget_version_container">
-     <div class="budget_container_heading"> <%= version.nil?  ? " Ohne Meilenstein" : version.name%></div>      
-      <% issue_list.each do |issue, total_costs| %>
-        <div class="budget_issue_container">
-          <div class="budget_issue_name"><%= issue.subject.truncate(20) %> </div>
-          <div class="budget_issue_progress"><%= line_for_issue_hours_progress(issue) %></div>
-          <div class="budget_issue_hours"><%= issue.spent_hours %> h </div>
-          <div class="budget_issue_costs"><%= number_to_currency(total_costs) %> </div>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
-</div>
+<div class="budget_heading">Personalkosten</div>
 
-<div class="budget_container">
-  <div class="budget_individual_container">
-    <div class="budget_container_heading">Einzelkosten</div>
+<% if not @costs_per_issue.empty? %>
+  <div class="budget_container">  
+    <% @costs_per_issue.each do |version, issue_list| %>
+      <div class="budget_version_container">
+        <div class="budget_container_heading"> <%= version.nil?  ? " Ohne Meilenstein" : version.name%></div>      
+        <% issue_list.each do |issue, total_costs| %>
+          <div class="budget_issue_container">
+            <div class="budget_issue_name"><%= issue.subject.truncate(20) %> </div>
+            <div class="budget_issue_progress"><%= line_for_issue_hours_progress(issue) %></div>
+            <div class="budget_issue_hours"><%= issue.spent_hours %> h </div>
+            <div class="budget_issue_costs"><%= number_to_currency(total_costs) %> </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
   </div>
-  
-  <%= @indiviual_costs.each do |item| %>
-    <div class="budget_individual_container">
-      <div class="budget_individual_label"><%= item.label %></div>
-      <div class="budget_individual_costs"><%= item.costs %></div>
+<% else %>
+  <div class="budget_container">Bislang keine Kosten</div>
+<% end %>
+
+<div class="budget_heading">Einzelkosten</div>
+
+<% if not @individual_costs.empty? %>
+  <div class="budget_container">
+    <div class="budget_individual_header budget_container_heading">
+      <div class="budget_individual_date">Buch. datum</div>
+      <div class="budget_individual_receipt">Belegnr.</div>
+      <div class="budget_individual_amount">Anzahl</div>
+      <div class="budget_individual_cost_description">Kostenart</div>
+      <div class="budget_individual_label">Objektbezeichnung</div>
+      <div class="budget_individual_costs">Kosten</div>
     </div>
-  <% end %>
-</div>
+    <% @individual_costs.each do |item| %>
+      <div class="budget_individual_container">
+        <div class="budget_individual_date"><%= I18n.l(item.booking_date) %></div>
+        <div class="budget_individual_receipt"><%= item.receipt_number %></div>
+        <div class="budget_individual_amount"><%= item.amount %></div>
+        <div class="budget_individual_cost_description"><%= item.cost_description %></div>
+        <div class="budget_individual_label"><%= item.label %></div>
+        <div class="budget_individual_costs"><%= number_to_currency(item.costs) %></div>
+      </div>
+    <% end %>
+    <div class="budget_individual_detail">Alle Einzelkosten anzeigen ...</div>
+  </div>
+<% else %>
+    <div class="budget_container">Bislang keine Kosten</div>
+<% end %>
 
 <div id="budget_floating">
 </div>

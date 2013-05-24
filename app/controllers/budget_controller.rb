@@ -42,7 +42,7 @@ class BudgetController < ApplicationController
     
     
     # individual costs ---------------------------------------------------------------------
-    @indiviual_costs = IndividualItem.for_month(Date.today, @project.id)
+    @individual_costs = IndividualItem.until(Date.today, @project.id).limit(10).reverse
   
   end
   
@@ -77,7 +77,7 @@ class BudgetController < ApplicationController
   
   # process a csv file with individual costs -------------
   def choose_individual_file
-    # TODO: template file
+
   end
   
   def parse_individual_file
@@ -94,18 +94,28 @@ class BudgetController < ApplicationController
     all_projects.each {|p| project_list[p.identifier.split('-').first] = p}
     
     CSV.parse(params[:individual_file].read, {:col_sep => ";", :headers => false}) do |row|
-      if row.length != 11
+      logger.info(row)
+      if row.length != 11 
         @failure.append(row)
         next
       end
       
-      if row[1].to_i != 6590 # dont use IAUF types
+      if row[1].to_i == 6590 # dont use IAUF types
         next
       end
       
       row[5] = project_list[row[5].downcase]
+      if row[5].nil?
+        next
+      end
+      
+      # parse floatstrings into a string, which can transformed into float
+      row[7] = (row[7] || "0").sub('.', '').sub(',','.').to_f
+      row[8] = (row[8] || "0").sub('.', '').sub(',','.').to_f
+      
       begin
-        row[9] = Date.strptime(row[9], "%d.%m.%Y")
+        row[9] = Date.strptime(row[9], "%m/%d/%Y")
+        row[10] = Date.strptime(row[10], "%m/%d/%Y")
       rescue
         next
       end
@@ -114,12 +124,21 @@ class BudgetController < ApplicationController
     end
     
     list.each do |row|
-      if not IndividualItem.create(:project_id => row[5].id, :label =>row[6],
-                                    :spend_on => row[9], :costs => row[8].to_f)
-        @failure.append(row)
+      individual = IndividualItem.where(:receipt_number => row[0].to_i, :cost_type => row[1].to_i,
+                                        :project_id => row[5].id, :label => row[6],
+                                        :amount => row[7], :costs => row[8],
+                                        :booking_date => row[9], :receipt_date => row[10])
+      if individual.empty?
+        if not IndividualItem.create(:receipt_number => row[0].to_i, :cost_type => row[1].to_i,
+                                      :cost_description => row[2], :project_id => row[5].id,
+                                      :label => row[6], :amount => row[7], :costs => row[8],
+                                      :booking_date => row[9], :receipt_date => row[10])
+          @failure.append(row)
+        end
       end
     end
     
+    redirect_to :controller => "budget", :action => "choose_individual_file"
   end
   
   # ------------ Helper methods --------------------
