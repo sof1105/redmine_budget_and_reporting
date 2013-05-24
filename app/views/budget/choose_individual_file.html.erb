@@ -1,0 +1,4 @@
+<%= form_tag({:controller => "budget", :action =>'parse_individual_file'}, :method => "post", :multipart => true) do %>
+  <%= file_field_tag(:individual_file, :accept => ".csv") %>
+  <%= submit_tag %>
+<% end %>

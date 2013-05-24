@@ -6,12 +6,12 @@
   <table>
     <tr>
       <td>Geplannt:</td>
-      <td><%= @overall_costs[:planned].nil? ? "Budget bisher nicht geplannt" :
+      <td><%= @overall_costs[:planned].nil? ? "---" :
           number_to_currency(@overall_costs[:planned].budget) %></td>
     </tr>
     <tr>
       <td>Prognose: <%= @overall_costs[:forecast].nil? ? "" : "vom " + I18n.l(@overall_costs[:forecast].planned_date) %></td>
-      <td><%= @overall_costs[:forecast].nil? ? "Keine Prognose vorhanden" : 
+      <td><%= @overall_costs[:forecast].nil? ? "---" : 
           number_to_currency(@overall_costs[:forecast]) %></td>
     </tr>
     <tr>

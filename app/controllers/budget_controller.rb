@@ -52,7 +52,7 @@ class BudgetController < ApplicationController
   
   
   def new_budget_plan
-    if not PlannedBudget.create({:project_id => @project.id, :budget => params[:budget].to_f, :created_on => Date.today})
+    if not PlannedBudget.create({:project_id => @project.id, :budget => params[:budget].to_f})
       flash[:error] = "Fehler beim speichern"
     end
     redirect_to :controller => "budget", :action => "index"
@@ -60,25 +60,66 @@ class BudgetController < ApplicationController
   
   def delete_budget_plan
     if params[:budget_id] && PlannedBudget.exists?(params[:budget_id])
-      PlannedBudget.find(params[:budget_id]).destroy
+      unless PlannedBudget.find(params[:budget_id]).destroy
+        flash[:error]= "Konnte geplanntes Budget nicht loeschen"
+      end
     else
-      # TODO: which format to response?
+      flash[:error] = "Keine id angegeben"
     end
-    # TODO: which format to response?
+    @budgets = PlannedBudget.where(:project_id => @project.id).order("created_on DESC")
+    redirect_to :controller => "budget", :action => "index"
   end
   
   def show_all_budget_plans
-    budgets = PlannedBudget.where(:project_id => @project.id).order("created_on DESC")
-    # TODO: which format to response
+    @budgets = PlannedBudget.where(:project_id => @project.id).order("created_on DESC")
+    render :partial => "show_budget_plan"
   end
   
   # process a csv file with individual costs -------------
-  def upload_individual_costs
-    # TODO: implement
+  def choose_individual_file
+    # TODO: template file
   end
   
   def parse_individual_file
-    # TODO: implement
+    if not params[:individual_file]
+      flash["error"] = "keine Datei hochgeladen"
+      redirect_to :controller => "budget", :action =>"upload_individual_costs"
+      return
+    end
+    
+    list = []
+    @failure = []
+    all_projects = Project.all
+    project_list = {}
+    all_projects.each {|p| project_list[p.identifier.split('-').first] = p}
+    
+    CSV.parse(params[:individual_file].read, {:col_sep => ";", :headers => false}) do |row|
+      if row.length != 11
+        @failure.append(row)
+        next
+      end
+      
+      if row[1].to_i != 6590 # dont use IAUF types
+        next
+      end
+      
+      row[5] = project_list[row[5].downcase]
+      begin
+        row[9] = Date.strptime(row[9], "%d.%m.%Y")
+      rescue
+        next
+      end
+      
+      list.append(row)
+    end
+    
+    list.each do |row|
+      if not IndividualItem.create(:project_id => row[5].id, :label =>row[6],
+                                    :spend_on => row[9], :costs => row[8].to_f)
+        @failure.append(row)
+      end
+    end
+    
   end
   
   # ------------ Helper methods --------------------
