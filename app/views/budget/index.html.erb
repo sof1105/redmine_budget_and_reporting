@@ -1,4 +1,19 @@
 <%= stylesheet_link_tag "budget_and_reporting", :plugin=>"redmine_budget_and_reporting" %>
+<script>
+  $(document).ready(function(){
+    $(".budget_individual_detail").click(function(){
+      $.get("<%= url_for(:controller => 'budget', :action => 'show_individual_costs', :project_id => @project.id) %>",
+        function(data){
+          $("#budget_floating").html(data);
+          $("#budget_floating").dialog({
+            width: 1000,
+            modal: true
+          });
+        }
+      );
+    });
+  });
+</script>
 
 <h2>Budget Report für <%= @project.name %></h2>
 
@@ -73,7 +88,7 @@
         <div class="budget_individual_costs"><%= number_to_currency(item.costs) %></div>
       </div>
     <% end %>
-    <div class="budget_individual_detail">Alle Einzelkosten anzeigen ...</div>
+    <div class="budget_individual_detail"><a href="#">Alle Einzelkosten anzeigen ...</a></div>
   </div>
 <% else %>
     <div class="budget_container">Bislang keine Kosten</div>

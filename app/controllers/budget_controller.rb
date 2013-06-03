@@ -47,7 +47,8 @@ class BudgetController < ApplicationController
   end
   
   def show_individual_costs
-    # TODO: per month or all for project? and which format to respond?
+    @items = IndividualItem.where(:project_id => @project.id).order("booking_date ASC")
+    render :partial => "show_individual_costs"
   end
   
   
@@ -70,6 +71,7 @@ class BudgetController < ApplicationController
     redirect_to :controller => "budget", :action => "index"
   end
   
+  
   def show_all_budget_plans
     @budgets = PlannedBudget.where(:project_id => @project.id).order("created_on DESC")
     render :partial => "show_budget_plan"
@@ -79,6 +81,7 @@ class BudgetController < ApplicationController
   def choose_individual_file
 
   end
+  
   
   def parse_individual_file
     if not params[:individual_file]

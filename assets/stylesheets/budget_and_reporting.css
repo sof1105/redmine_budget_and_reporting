@@ -1,6 +1,7 @@
 .budget_container{
   padding-left: 8px;
   padding-bottom: 20px;
+  background: #FFF;
 }
 
 .budget_version_container{
@@ -137,3 +138,4 @@
 .budget_individual_detail{
   padding-top: 15px;
 }
+
