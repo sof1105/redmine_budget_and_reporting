@@ -1,0 +1,35 @@
+.index_container{
+  margin-top: 25px;
+  padding-bottom: 10px;
+  font-size: 14px;
+}
+
+.index_overflow_container{
+  overflow: hidden;
+  width: 100%;
+  padding-top: 3px;
+}
+
+.description{
+  float: left;
+  font-weight: bold;
+  width: 100px;
+}
+
+.description_value{
+  float: left;
+  width: 500px;
+  font-style: italic;
+}
+
+.index_heading{
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.horizontal_line{
+  border-bottom: 2px solid gray;
+}

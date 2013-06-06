@@ -5,6 +5,10 @@ class ReportingController < ApplicationController
   
   def index
     # show overview over actual project (depending on date)
+    role = Role.where(:name => "Projektleiter").first
+    unless role.nil?
+      @project_leader = @project.users_by_role[role]
+    end
     
   end
   
