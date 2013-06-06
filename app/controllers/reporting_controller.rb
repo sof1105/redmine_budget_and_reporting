@@ -64,7 +64,11 @@ class ReportingController < ApplicationController
     
     # TODO: update Issue Relations
     
-    redirect_to :controller => 'reporting', :action => 'choose_gan_file'
+    flash[:notice] = "Gan-File wurde hochgeladen"
+    if params[:back_url]
+        redirect_to params[:back_url]
+    end
+    redirect_to :controller => 'gantts', :action => 'show'
   end
   
   

@@ -9,7 +9,13 @@ module Redmine_budget_and_reporting
       # make sure sidebar is only displayed for Budget- and ReportingController
       if controller && (controller.is_a?(BudgetController) || controller.is_a?(ReportingController))
         sidebar << controller.send(:render_to_string, {
-            :partial => "/sidebar/menu"
+                :partial => "/sidebar/menu"
+            })
+      end
+      
+      if controller && (controller.is_a?(GanttsController))
+        sidebar << controller.send(:render_to_string, {
+                :partial => "/sidebar/new_ganfile"
             })
       end
       
