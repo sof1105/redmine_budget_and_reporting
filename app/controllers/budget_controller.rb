@@ -117,8 +117,8 @@ class BudgetController < ApplicationController
       row[8] = (row[8] || "0").sub('.', '').sub(',','.').to_f
       
       begin
-        row[9] = Date.strptime(row[9], "%m.%d.%Y")
-        row[10] = Date.strptime(row[10], "%m.%d.%Y")
+        row[9] = Date.strptime(row[9], "%d.%m.%Y")
+        row[10] = Date.strptime(row[10], "%d.%m.%Y")
       rescue
         next
       end
