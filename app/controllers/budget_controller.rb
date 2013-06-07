@@ -97,7 +97,7 @@ class BudgetController < ApplicationController
     all_projects.each {|p| project_list[p.identifier.split('-').first] = p}
     
     CSV.parse(params[:individual_file].read, {:col_sep => ";", :headers => false}) do |row|
-      logger.info(row)
+      #logger.info(row)
       if row.length != 11 
         @failure.append(row)
         next
