@@ -51,8 +51,10 @@ class ReportingController < ApplicationController
     issue_list = []
     versions.each do |version|
       version_xml = doc.xpath("//task[@name='"+version.name+"']")
-      version_xml.first.children.each do |issue|
-        update_issue_from_xml(issue, version.id, issue_list, levels)
+      if version_xml.first
+        version_xml.first.children.each do |issue|
+          update_issue_from_xml(issue, version.id, issue_list, levels)
+        end
       end
     end
     
