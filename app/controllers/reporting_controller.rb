@@ -13,10 +13,12 @@ class ReportingController < ApplicationController
     end
     
     @version_forecasts = []
-    temp = []
     @project.versions.each do |version|
+      temp = []
+      closed = nil
+      forecast = nil
       forecast = VersiondateForecast.until(date, @project.id).first
-      closed = version.fixed_issues.order("closed_on DESC").first.closed_on if version.open_issues_count == 0
+      closed = version.fixed_issues.order("closed_on DESC").first.closed_on if version.issues_count > 0 && version.open_issues_count == 0
       temp.append(version)
       temp.append(forecast)
       temp.append(closed)
@@ -24,6 +26,7 @@ class ReportingController < ApplicationController
     end
     
     @budget = []
+    budget_issue = 0
     TimeEntry.where(:project_id => @project.id).each do |entry|
       budget_issue += costs_for_TimeEntry(entry, salary_custom_id)
     end

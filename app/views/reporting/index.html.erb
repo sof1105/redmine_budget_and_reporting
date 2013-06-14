@@ -17,3 +17,37 @@
 <div class="horizontal_line"></div>
 
 <div class="index_heading">Meilensteine:</div>
+<table>
+  <tr>
+    <th>Meilenstein</th>
+    <th>geplannt</th>
+    <th>Prognose</th>
+    <th>Ist-Wert</th>
+  </tr>
+  <% @version_forecasts.each do |forecast| %>
+    <tr>
+      <td><%= forecast[0].name %></td>
+      <td><%= forecast[0].effective_date || "---" %></td>
+      <td><%= forecast[1] || "---" %></td>
+      <td><%= forecast[2] || "---" %></td>
+    </tr>
+  <% end %>
+</table>
+
+<div class="horizontal_line"></div>
+
+<div class="index_heading">Budget</div>
+<table>
+  <tr>
+    <th></th>
+    <th>geplannt</th>
+    <th>Prognose</th>
+    <th>Ist-Wert</th>
+  </tr>
+  <tr>
+    <td>Kosten</td>
+    <td><%= @budget[2] || "---" %></td>
+    <td><%= @budget[3] || "---" %></td>
+    <td><%= @budget[0] + @budget[1] || "---" %></td>
+  </tr>
+</table>
