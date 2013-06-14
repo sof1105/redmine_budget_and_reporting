@@ -1,7 +1,17 @@
 <h2> Upload Gan-File </h2>
 
-<%= form_tag({:controller => 'reporting', :action => "upload_gan_file"}, :method => "post", :multipart => true) do %>
-  <%= file_field_tag(:gan, :accept => ".gan") %>
-  <%= submit_tag %>
+<% if @tracker_ids %>
+  <%= form_tag({:controller => 'reporting', :action => "upload_gan_file"}, :method => "post", :multipart => true) do %>
+    <ul>
+      <li><%= label_tag(:delete_old, "Alte Aufgaben löschen: ") %><%= check_box_tag(:delete_old) %></li>
+      <li><%= label_tag(:tracker_id, "Neue Tickets anlegen als: ") %><%= select_tag(:tracker_id, options_for_select(@tracker_ids, @standard_id)) %></li>
+      <li><%= label_tag(:levels, "Anzahl der zu übernehmende Unteraufgaben (-1 für alle) ") %><%= text_field_tag(:levels, 0, {:maxlength => 2, :size => 2}) %></li>
+    </ul>
+    <p/>
+    <%= file_field_tag(:gan, :accept => ".gan", :size => "25") %></p>
+    <hr>
+    <%= submit_tag %>
+  <% end %>
+<% else %>
+  Legen sie erste einen Tracker an (Konfiguration -> 1. Seite -> Tracker)
 <% end %>
-
