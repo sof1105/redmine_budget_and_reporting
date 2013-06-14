@@ -53,8 +53,10 @@
         <div class="budget_container_heading"> <%= version.nil?  ? " Ohne Meilenstein" : version.name%></div>      
         <% issue_list.each do |issue, total_costs| %>
           <div class="budget_issue_container">
-            <div class="budget_issue_name"><%= link_to(issue.subject.truncate(30), {:controller=> "issues", :action => "show", 
-                                                                                    :id => issue.id}) %> </div>
+            <div class="budget_issue_name" style="<%="text-decoration:line-through" if issue.closed? %>" >
+              <%= link_to(issue.subject.truncate(30), {:controller=> "issues", :action => "show", 
+                                                       :id => issue.id}) %>
+            </div>
             <div class="budget_issue_progress"><%= line_for_issue_hours_progress(issue) %></div>
             <div class="budget_issue_hours"><%= (issue.spent_hours).round(2) %> h </div>
             <div class="budget_issue_costs"><%= number_to_currency(total_costs) %> </div>

@@ -5,11 +5,35 @@ class ReportingController < ApplicationController
   
   def index
     # show overview over actual project (depending on date)
+    date = Date.today
+    
     role = Role.where(:name => "Projektleiter").first
     unless role.nil?
       @project_leader = @project.users_by_role[role]
     end
     
+    @version_forecasts = []
+    temp = []
+    @project.versions.each do |version|
+      forecast = VersiondateForecast.until(date, @project.id).first
+      closed = version.fixed_issues.order("closed_on DESC").first.closed_on if version.open_issues_count == 0
+      temp.append(version)
+      temp.append(forecast)
+      temp.append(closed)
+      @version_forecasts.append(temp)
+    end
+    
+    @budget = []
+    TimeEntry.where(:project_id => @project.id).each do |entry|
+      budget_issue += costs_for_TimeEntry(entry, salary_custom_id)
+    end
+    budget_individual = IndividualItem.until(date, @project.id).sum(:costs)
+    
+    @budget.append(budget_issue)
+    @budget.append(budget_individual)
+    @budget.append(PlannedBudget.latest_budget_for(@project.id))
+    @budget.append(ProjectbudgetForecast.where(:project_id => @project.id).order("planned_date DESC").first)
+
   end
   
   # upload new gan-file ---------------------------------
@@ -26,7 +50,6 @@ class ReportingController < ApplicationController
   end
   
   def upload_gan_file
-    
     # check for params
     unless params[:gan]
       flash[:error] = "Keine Datei ausgewaehlt"
@@ -36,7 +59,6 @@ class ReportingController < ApplicationController
     
     levels = params[:levels].nil? ? -1 : params[:levels].to_i
     delete_old = params[:delete_old].nil? ? false : true
-    
     tracker = @project.trackers.where(:id => params[:tracker_id]).first || @project.trackers.first
     if tracker.nil?
       flash[:error] = "Es existiert kein Tracker fuer dieses Projekt."
@@ -71,7 +93,6 @@ class ReportingController < ApplicationController
       end
     end
     
-    
     # delete old issues if corresponding checkbox is true
     new_issue_ids = issue_list.map {|i| i.id}
     
@@ -103,7 +124,6 @@ class ReportingController < ApplicationController
     
   
   # --------------- Helper methods --------------
-  
   def update_issue_from_xml(xml_node, version, tracker, issue_list, levels=0)
     # updates or creates issues which corresponds to xml_nod
     # to a maximum depth of levels (level 0 = only first level issue)
@@ -112,7 +132,6 @@ class ReportingController < ApplicationController
       return
     end
     
- 
     # get issues or create a new (could be more than one, subject is not unique)
     corresponding_issues = Issue.where(:project_id => @project.id, 
         :subject => xml_node["name"])
@@ -159,10 +178,8 @@ class ReportingController < ApplicationController
       
       # append issue from issue_list
       issue_list.append(issue)
-
     end
 
-    
     # update childs recursively (but after all current level childs a created)
     levels = levels -1
     if levels == -1
@@ -171,9 +188,15 @@ class ReportingController < ApplicationController
     xml_node.children.each do |child|
       update_issue_from_xml(child, version, tracker, issue_list, levels)
     end
-
   end
   
+  
+  def costs_for_TimeEntry(entry, salary_id = nil)
+    if salary_id.nil?
+      salary_id = UserCustomField.where(:name => "Gehalt").first.id
+    end
+    return (User.find(entry.user_id).custom_field_value(salary_id) || 50).to_f * entry.hours
+  end
   
   def set_project
     if params[:project_id]

@@ -22,8 +22,6 @@ class BudgetController < ApplicationController
       @overall_costs[:issues] += costs_for_TimeEntry(entry, salary_custom_id)
     end
     
-    
-    
     # costs per issue -------------------------------------------------------------------
     all_issues = Issue.where(:project_id => @project.id).group_by(&:fixed_version)
     all_issues.each do |version, issue_list|
@@ -39,7 +37,6 @@ class BudgetController < ApplicationController
         @costs_per_issue[version].append([issue, total_costs])
       end
     end
-    
     
     # individual costs ---------------------------------------------------------------------
     @individual_costs = IndividualItem.until(Date.today, @project.id).limit(10).reverse
@@ -70,7 +67,6 @@ class BudgetController < ApplicationController
     @budgets = PlannedBudget.where(:project_id => @project.id).order("created_on DESC")
     redirect_to :controller => "budget", :action => "index"
   end
-  
   
   def show_all_budget_plans
     @budgets = PlannedBudget.where(:project_id => @project.id).order("created_on DESC")
