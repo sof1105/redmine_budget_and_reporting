@@ -3,8 +3,8 @@ class VersiondateForecast < ActiveRecord::Base
   
   before_save :set_created_on_date
 
-  def self.until(month, project_id)
-    where("version_id = ? AND planned_date <= ?", project_id, month.end_of_month).order("planned_date DESC")
+  def self.until(month, version_id)
+    where("version_id = ? AND planned_date <= ?", version_id, month.end_of_month).order("planned_date DESC")
   end
   
   def differenz(number_of_months)

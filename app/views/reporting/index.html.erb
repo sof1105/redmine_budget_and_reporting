@@ -1,4 +1,18 @@
 <%= stylesheet_link_tag "reporting", :plugin => "redmine_budget_and_reporting" %>
+
+<script type="text/javascript">
+
+function open_dialog(url){
+   $.get(url, function(data){
+      $("#floating").html(data);
+      $("#floating").dialog({
+        modal: true
+      })
+    })
+};
+
+</script>
+
 <h2>Plannungsuebersicht</h2>
 
 <div class="index_container">
@@ -23,6 +37,7 @@
     <th>geplannt</th>
     <th>Prognose</th>
     <th>Ist-Wert</th>
+    <th></th>
   </tr>
   <% @version_forecasts.each do |forecast| %>
     <tr>
@@ -30,6 +45,9 @@
       <td><%= forecast[0].effective_date || "---" %></td>
       <td><%= forecast[1] || "---" %></td>
       <td><%= forecast[2] || "---" %></td>
+      <td><span class="icon icon-add">
+          <a onclick="open_dialog('<%=url_for({:controller => "forecast", :action => "show_versiondate_forecast",
+                                               :version_id => forecast[0].id.to_s}).html_safe %>')" href="#">Neue Prognose</a></td>
     </tr>
   <% end %>
 </table>
@@ -43,11 +61,15 @@
     <th>geplannt</th>
     <th>Prognose</th>
     <th>Ist-Wert</th>
+    <th></th>
   </tr>
   <tr>
     <td>Kosten</td>
     <td><%= @budget[2] || "---" %></td>
     <td><%= @budget[3] || "---" %></td>
     <td><%= @budget[0] + @budget[1] || "---" %></td>
+    <td><span class="icon icon-add">Neue Prognose</td>
   </tr>
 </table>
+
+<div id="floating" style="display:hidden"></div>
