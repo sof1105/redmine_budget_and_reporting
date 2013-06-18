@@ -4,12 +4,29 @@
 
 function open_versiondate_dialog(url){
    $.get(url, function(data){
-      $("#floating").attr("title", "Alle Prognosen");
       $("#floating").html(data);
       $("#floating").dialog({
-        modal: true
-      })
-    })
+        modal: true,
+        title: "Alle Prognosen",
+        open: function(event, ui){
+                console.log($("input:first"));
+                // remove focus on first elemente and hide already opend datepicker div
+                $(this).find('*').blur();
+                $("#ui-datepicker-div").hide();
+              },
+        close: function(event, ui){
+                 // reload current url
+                 window.location.reload(true);
+                 // use argument true, to really reload page (because its dynamically generated)
+               }
+      });
+    });
+};
+
+function reload_dialog(url){
+  $.get(url, function(data){
+    $("#floating").html(data);
+  });
 };
 
 </script>
@@ -42,13 +59,13 @@ function open_versiondate_dialog(url){
   </tr>
   <% @version_forecasts.each do |forecast| %>
     <tr>
-      <td><%= forecast[0].name %></td>
-      <td><%= forecast[0].effective_date || "---" %></td>
-      <td><%= forecast[1] || "---" %></td>
-      <td><%= forecast[2] || "---" %></td>
-      <td><span class="icon icon-add">
+      <td><%= link_to forecast[0].name, {:controller => "versions", :action => "edit", :id => forecast[0].id} %></td>
+      <td><%= forecast[0].effective_date.nil? ? "---" : I18n.l(forecast[0].effective_date) %></td>
+      <td><%= forecast[1].nil? ? "---" : I18n.l(forecast[1].forecast_date) %></td>
+      <td><%= forecast[2].nil? ? "---" : I18n.l(forecast[2].to_date) %></td>
+      <td><span class="icon icon-edit">
           <a onclick="open_versiondate_dialog('<%=url_for({:controller => "forecast", :action => "show_versiondate_forecast",
-                                               :version_id => forecast[0].id.to_s, :project_id => @project.id})%>')" href="#">Neue Prognose</a></td>
+                                               :version_id => forecast[0].id.to_s, :project_id => @project.id})%>')" href="#">Bearbeiten</a></td>
     </tr>
   <% end %>
 </table>

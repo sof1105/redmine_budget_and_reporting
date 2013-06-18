@@ -17,14 +17,14 @@ class ReportingController < ApplicationController
       temp = []
       closed = nil
       forecast = nil
-      forecast = VersiondateForecast.until(date, @project.id).first
+      forecast = VersiondateForecast.until(date, version.id).first
       closed = version.fixed_issues.order("closed_on DESC").first.closed_on if version.issues_count > 0 && version.open_issues_count == 0
       temp.append(version)
       temp.append(forecast)
       temp.append(closed)
       @version_forecasts.append(temp)
     end
-    @version_forecasts.sort! {|a,b| a[0].effective_date <=>b[0].effective_date}
+    @version_forecasts.sort! {|a,b| a[0].name <=> b[0].name}
     
     
     @budget = []
