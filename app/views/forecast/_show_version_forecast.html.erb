@@ -1,4 +1,14 @@
-<h2>kleiner Test</h2>
-asdfasdf
-asdfasdf
-Version ID: <%= params[:version_id]  %>
+
+<% if @errors.nil? %>
+  <% if @forecasts.empty? %>
+    <h3>Bisher keine Prognosen erstellt</h3>
+  <% else %>
+    <% @forecasts.each do |forecast| %>
+      
+    <% end %>
+  <% end %>
+  <%# add new forecast %>
+  
+<% else %>
+  <h3 style="color:red"><%= @errors %></h3>
+<% end %>

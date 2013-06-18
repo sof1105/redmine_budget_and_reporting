@@ -24,6 +24,8 @@ class ReportingController < ApplicationController
       temp.append(closed)
       @version_forecasts.append(temp)
     end
+    @version_forecasts.sort! {|a,b| a[0].effective_date <=>b[0].effective_date}
+    
     
     @budget = []
     budget_issue = 0

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class ForecastController < ApplicationController
   unloadable
   
@@ -5,8 +7,16 @@ class ForecastController < ApplicationController
 
   def show_versiondate_forecast
     date = Date.today
-    version_id = params[:version_id]
-    @forecasts = VersiondateForecast.until(date, version_id)
+    @forecasts = []
+    begin
+      version = Version.find(params[:version_id])
+      if version.project.id != @project.id
+        @errors = "Meilenstein gehört nicht zum aktuellen Projekt"
+      end
+      @forecasts = VersiondateForecast.until(date, version.id)
+    rescue
+      @errors = "Meilenstein wurde nicht gefunden"
+    end
     render :partial => "show_version_forecast"
   end
   

@@ -2,8 +2,9 @@
 
 <script type="text/javascript">
 
-function open_dialog(url){
+function open_versiondate_dialog(url){
    $.get(url, function(data){
+      $("#floating").attr("title", "Alle Prognosen");
       $("#floating").html(data);
       $("#floating").dialog({
         modal: true
@@ -46,8 +47,8 @@ function open_dialog(url){
       <td><%= forecast[1] || "---" %></td>
       <td><%= forecast[2] || "---" %></td>
       <td><span class="icon icon-add">
-          <a onclick="open_dialog('<%=url_for({:controller => "forecast", :action => "show_versiondate_forecast",
-                                               :version_id => forecast[0].id.to_s}).html_safe %>')" href="#">Neue Prognose</a></td>
+          <a onclick="open_versiondate_dialog('<%=url_for({:controller => "forecast", :action => "show_versiondate_forecast",
+                                               :version_id => forecast[0].id.to_s, :project_id => @project.id})%>')" href="#">Neue Prognose</a></td>
     </tr>
   <% end %>
 </table>
