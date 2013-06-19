@@ -2,6 +2,9 @@ class VersiondateForecast < ActiveRecord::Base
   unloadable
   
   before_save :set_created_on_date
+  validates_presence_of :planned_date
+  validates_presence_of :forecast_date
+  validates_presence_of :version_id
 
   def self.until(month, version_id)
     where("version_id = ? AND planned_date <= ?", version_id, month.end_of_month).order("planned_date DESC")

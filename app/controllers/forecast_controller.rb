@@ -35,7 +35,29 @@ class ForecastController < ApplicationController
   end
   
   def new_versiondate_forecast
-  
+    if params[:version_id] && Version.exists?(params[:version_id])
+      @version = Version.find(params[:version_id])
+      if params[:forecast_date] && params[:planned_date]
+        begin
+          forecast_date = Date.parse(params[:forecast_date])
+          planned_date = Date.parse(params[:planned_date])
+          if not VersiondateForecast.create({:forecast_date => forecast_date, :planned_date => planned_date,
+                                      :version_id => @version.id})
+            @errors = "Fehler beim speichern"
+          end
+        rescue
+          @errors = "Falsches Datumsformat"
+        end
+      else
+          @errors = "Kein Datum angegeben"
+      end
+      
+      @forecasts = VersiondateForecast.until(Date.today, @version.id)
+    else
+      @errors = "Version nicht gefunden"
+    end
+    
+    render :partial => "show_version_forecast"
   end
   
   
