@@ -4,6 +4,8 @@ class BudgetController < ApplicationController
   before_filter :set_project
   
   def index
+    
+    date = Date.today
     # show actual budget for project
     @overall_costs = {}
     @costs_per_issue = {}
@@ -11,8 +13,8 @@ class BudgetController < ApplicationController
   
     # the overall costs of the project ---------------------------------------------------
     @overall_costs[:planned] = PlannedBudget.latest_budget_for(@project.id)
-    @overall_costs[:forecast] = ProjectbudgetForecast.where(:project_id => @project.id).order("planned_date DESC").first
-    @overall_costs[:individual] = IndividualItem.until(Date.today, @project.id).sum(:costs)
+    @overall_costs[:forecast] = ProjectbudgetForecast.until(date, @project.id).first
+    @overall_costs[:individual] = IndividualItem.until(date, @project.id).sum(:costs)
     @overall_costs[:issues] = 0
     
     salary_custom_id = UserCustomField.where(:name => "Gehalt").first.id

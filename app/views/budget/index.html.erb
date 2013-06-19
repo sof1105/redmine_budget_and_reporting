@@ -22,14 +22,14 @@
 <div class="budget_container">
   <table>
     <tr>
-      <td>Geplannt:</td>
+      <td>Geplannt <%= @overall_costs[:planned].nil? ? "" : "am " + I18n.l(@overall_costs[:planned].created_on) %>: </td>
       <td><%= @overall_costs[:planned].nil? ? "---" :
           number_to_currency(@overall_costs[:planned].budget) %></td>
     </tr>
     <tr>
-      <td>Prognose: <%= @overall_costs[:forecast].nil? ? "" : "vom " + I18n.l(@overall_costs[:forecast].planned_date) %></td>
+      <td>Prognose <%= @overall_costs[:forecast].nil? ? "" : "vom " + I18n.l(@overall_costs[:forecast].planned_date) %>: </td>
       <td><%= @overall_costs[:forecast].nil? ? "---" : 
-          number_to_currency(@overall_costs[:forecast]) %></td>
+          number_to_currency(@overall_costs[:forecast].budget) %></td>
     </tr>
     <tr>
       <td>IST-Wert:</td>

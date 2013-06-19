@@ -72,7 +72,49 @@ class ForecastController < ApplicationController
   end
   
   def show_budget_plan
-   
+    date = Date.today
+    
+    @plan = PlannedBudget.latest_budget_for(@project.id)
+    render :partial => "show_budget_plan"
+  end
+  
+  def new_budget_plan
+    if params[:budget]
+      begin
+        budget = Float(params[:budget])
+      rescue
+        @errors = "Budget nicht numerisch"
+      end
+      
+      if not @errors
+        plan = PlannedBudget.find_or_initialize_by_project_id(@project.id)
+        plan.update_attributes({
+          :project_id => @project.id,
+          :budget => budget,
+        })
+        if not plan.save
+          @errors = "Konnte Planung nicht speichern"
+        end
+      end
+    else
+      @errors = "Budget Planung nicht angegeben"
+    end
+    
+    @plan = PlannedBudget.latest_budget_for(@project.id)
+    render :partial => "show_budget_plan"
+  end
+  
+  def delete_budget_plan
+    if params[:plan_id] && PlannedBudget.exists?(params[:plan_id])
+      if not PlannedBudget.find(params[:plan_id]).destroy
+        @errors = "Konnte Planung nicht löschen"
+      end
+    else
+      @errors = "Planung existiert nicht"
+    end
+    
+    @plan = PlannedBudget.latest_budget_for(@project.id)
+    render :partial => "show_budget_plan"
   end
   
   def show_budget_forecast

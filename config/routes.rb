@@ -18,4 +18,8 @@ scope "/projects/:project_id" do
   get "/forecast/budget/" => "forecast#show_budget_forecast"
   get "/forecast/budget/:forecast_id/delete" => "forecast#delete_budget_forecast"
   post "/forecast/budget/new" => "forecast#new_budget_forecast"
+  
+  get "/plan/budget/plan" => "forecast#show_budget_plan"
+  get "/plan/budget/:plan_id/delete" => "forecast#delete_budget_plan"
+  post "/plan/budget/new" => "forecast#new_budget_plan"
 end

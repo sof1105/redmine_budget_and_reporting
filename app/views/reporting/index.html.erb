@@ -78,11 +78,12 @@ function reload_dialog(url){
   <% @version_forecasts.each do |forecast| %>
     <tr>
       <td><%= link_to forecast[0].name, {:controller => "versions", :action => "edit", :id => forecast[0].id} %></td>
-      <td><%= forecast[0].effective_date.nil? ? "---" : I18n.l(forecast[0].effective_date) %><span class="icon icon-edit"></td>
+      <td><%= forecast[0].effective_date.nil? ? "---" : I18n.l(forecast[0].effective_date) %>
+        <%= link_to '<span class="icon icon-edit">'.html_safe, {:controller => "versions", :action => "edit", :id => forecast[0].id} %></td>
       <td><%= forecast[1].nil? ? "---" : I18n.l(forecast[1].forecast_date) %>
         <a href="#" onClick="open_versiondate_dialog('<%=url_for({:controller => "forecast", :action => "show_versiondate_forecast",
                                                                   :version_id => forecast[0].id.to_s, :project_id => @project.id})%>')">
-          <span class="icon icon-edit"></a></td>
+        <span class="icon icon-edit"></a></td>
       <td><%= forecast[2].nil? ? "---" : I18n.l(forecast[2].to_date) %></td>
     </tr>
   <% end %>
@@ -100,7 +101,10 @@ function reload_dialog(url){
   </tr>
   <tr>
     <td>Kosten</td>
-    <td><%= @budget[2] || "---" %><span class="icon icon-edit"></td>
+    <td><%= @budget[2].nil? ? "---" : number_to_currency(@budget[2].budget)%>
+      <a href= "#" onClick="open_budget_dialog('<%= url_for({:controller => "forecast", :action => "show_budget_plan",
+                                                             :project_id => @project.id}) %>')">
+      <span class="icon icon-edit"></a></td>
     <td><%= @budget[3].nil? ? "---" : number_to_currency(@budget[3].budget) %>
       <a href= "#" onClick="open_budget_dialog('<%= url_for({:controller => "forecast", :action => "show_budget_forecast",
                                                              :project_id => @project.id}) %>')">
