@@ -14,4 +14,8 @@ scope "/projects/:project_id" do
   get "/forecast/version/:version_id/" => "forecast#show_versiondate_forecast"
   get "/forecast/version/:forecast_id/delete" => "forecast#delete_versiondate_forecast"
   post "/forecast/version/:version_id/new" => "forecast#new_versiondate_forecast"
+  
+  get "/forecast/budget/" => "forecast#show_budget_forecast"
+  get "/forecast/budget/:forecast_id/delete" => "forecast#delete_budget_forecast"
+  post "/forecast/budget/new" => "forecast#new_budget_forecast"
 end

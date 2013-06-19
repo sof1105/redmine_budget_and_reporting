@@ -7,12 +7,31 @@ function open_versiondate_dialog(url){
       $("#floating").html(data);
       $("#floating").dialog({
         modal: true,
-        title: "Alle Prognosen",
+        title: "Meilenstein Plannung",
         open: function(event, ui){
-                console.log($("input:first"));
                 // remove focus on first elemente and hide already opend datepicker div
+                $(".hasDatepicker").datepicker("hide");
                 $(this).find('*').blur();
-                $("#ui-datepicker-div").hide();
+              },
+        close: function(event, ui){
+                 // reload current url
+                 window.location.reload(true);
+                 // use argument true, to really reload page (because its dynamically generated)
+               }
+      });
+    });
+};
+
+function open_budget_dialog(url){
+   $.get(url, function(data){
+      $("#floating").html(data);
+      $("#floating").dialog({
+        modal: true,
+        title: "Budget Plannung",
+        open: function(event, ui){
+                // remove focus on first elemente and hide already opend datepicker div
+                $(".hasDatepicker").datepicker("hide");
+                $(this).find('*').blur();
               },
         close: function(event, ui){
                  // reload current url
@@ -55,17 +74,16 @@ function reload_dialog(url){
     <th>geplannt</th>
     <th>Prognose</th>
     <th>Ist-Wert</th>
-    <th></th>
   </tr>
   <% @version_forecasts.each do |forecast| %>
     <tr>
       <td><%= link_to forecast[0].name, {:controller => "versions", :action => "edit", :id => forecast[0].id} %></td>
-      <td><%= forecast[0].effective_date.nil? ? "---" : I18n.l(forecast[0].effective_date) %></td>
-      <td><%= forecast[1].nil? ? "---" : I18n.l(forecast[1].forecast_date) %></td>
+      <td><%= forecast[0].effective_date.nil? ? "---" : I18n.l(forecast[0].effective_date) %><span class="icon icon-edit"></td>
+      <td><%= forecast[1].nil? ? "---" : I18n.l(forecast[1].forecast_date) %>
+        <a href="#" onClick="open_versiondate_dialog('<%=url_for({:controller => "forecast", :action => "show_versiondate_forecast",
+                                                                  :version_id => forecast[0].id.to_s, :project_id => @project.id})%>')">
+          <span class="icon icon-edit"></a></td>
       <td><%= forecast[2].nil? ? "---" : I18n.l(forecast[2].to_date) %></td>
-      <td><span class="icon icon-edit">
-          <a onclick="open_versiondate_dialog('<%=url_for({:controller => "forecast", :action => "show_versiondate_forecast",
-                                               :version_id => forecast[0].id.to_s, :project_id => @project.id})%>')" href="#">Bearbeiten</a></td>
     </tr>
   <% end %>
 </table>
@@ -79,14 +97,15 @@ function reload_dialog(url){
     <th>geplannt</th>
     <th>Prognose</th>
     <th>Ist-Wert</th>
-    <th></th>
   </tr>
   <tr>
     <td>Kosten</td>
-    <td><%= @budget[2] || "---" %></td>
-    <td><%= @budget[3] || "---" %></td>
-    <td><%= @budget[0] + @budget[1] || "---" %></td>
-    <td><span class="icon icon-add">Neue Prognose</td>
+    <td><%= @budget[2] || "---" %><span class="icon icon-edit"></td>
+    <td><%= @budget[3].nil? ? "---" : number_to_currency(@budget[3].budget) %>
+      <a href= "#" onClick="open_budget_dialog('<%= url_for({:controller => "forecast", :action => "show_budget_forecast",
+                                                             :project_id => @project.id}) %>')">
+      <span class= "icon icon-edit"></a></td>
+    <td><%= number_to_currency(@budget[0] + @budget[1]) || "---" %></td>
   </tr>
 </table>
 

@@ -2,6 +2,8 @@ class ProjectbudgetForecast < ActiveRecord::Base
   unloadable
 
   before_save :set_created_on_date
+  validates_presence_of :planned_date
+  validates_presence_of :budget
 
   def self.until(month, project_id)
     where("project_id = ? and planned_date <= ?", project_id, month.end_of_month).order("planned_date DESC")

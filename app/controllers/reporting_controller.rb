@@ -37,7 +37,7 @@ class ReportingController < ApplicationController
     @budget.append(budget_issue)
     @budget.append(budget_individual)
     @budget.append(PlannedBudget.latest_budget_for(@project.id))
-    @budget.append(ProjectbudgetForecast.where(:project_id => @project.id).order("planned_date DESC").first)
+    @budget.append(ProjectbudgetForecast.until(date, @project.id).first)
 
   end
   

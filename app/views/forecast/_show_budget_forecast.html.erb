@@ -14,9 +14,9 @@
       <th></th>
   <% @forecasts.each do |forecast| %>
     <tr>
-      <td><%= I18n.l(forecast.forecast_date) %></td>
+      <td><%= number_to_currency(forecast.budget) %></td>
       <td><%= I18n.l(forecast.planned_date) %></td>
-      <td><a onclick="reload_dialog('<%= url_for({:controller => "forecast", :action => "delete_versiondate_forecast",
+      <td><a onclick="reload_dialog('<%= url_for({:controller => "forecast", :action => "delete_budget_forecast",
                                 :project_id => @project.id, :forecast_id => forecast.id}) %>')" href="#">
           <span class="icon icon-del"/>löschen?</a></td>
     </tr>
@@ -30,8 +30,8 @@
 <%= form_tag({}, :id =>"new_forecast_form") do %>
   <table>
     <tr>
-      <td><%=label_tag(:forecast_date, "Prognose: ") %></td>
-      <td><%= text_field_tag(:forecast_date, nil, :size => 10) %></td>
+      <td><%=label_tag(:budget, "Budget Prognose: ") %></td>
+      <td><%= text_field_tag(:budget, nil, :size => 10, :type =>"number", :step => "any") %></td>
     </tr>
     <tr>
       <td><%=label_tag(:planned_date, "Geplant am: ")%></td>
@@ -45,12 +45,6 @@
 
 <script type="text/javascript">
   //transform inputs into datepicker
-  $("#forecast_date").datepicker({
-    buttonImage: "<%= path_to_image("/images/calendar.png") %>",
-    duration: 0,
-    showOn: 'both',
-    dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
-  });
   $("#planned_date").datepicker({
     buttonImage: "<%= path_to_image("/images/calendar.png") %>",
     duration: 0,
@@ -62,8 +56,7 @@
   // make form post an ajax call
   $("#new_forecast_form").submit(function(event){
     event.preventDefault();
-    $.post("<%= url_for({:controller => "forecast", :action => "new_versiondate_forecast",
-                                :version_id => @version.id, :project_id => @project.id}) %>",
+    $.post("<%= url_for({:controller => "forecast", :action => "new_budget_forecast", :project_id => @project.id})%>",
             $("#new_forecast_form").serialize(),
             function(data){
               $("#floating").html(data);
