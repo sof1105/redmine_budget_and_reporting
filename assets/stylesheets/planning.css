@@ -1,0 +1,33 @@
+.index_heading{
+  font-size: 12px;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+table.projectinformation td:first-child{
+  font-weight: bold;
+}
+
+table.forecast{
+  border-collapse: collapse;
+}
+
+table.forecast th{
+  padding: 5px;
+  border: 1px dotted gray;
+  width: 150px;
+  text-align: center;
+  border-left: 1px dotted gray;
+}
+
+table.forecast td{
+  border: 1px dotted gray;
+  text-align: center;
+  padding: 4px;
+}
+
+table.forecast td:first-child{
+  text-align: left;
+}

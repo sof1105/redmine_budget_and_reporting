@@ -1,4 +1,4 @@
-<%= stylesheet_link_tag "reporting", :plugin => "redmine_budget_and_reporting" %>
+<%= stylesheet_link_tag "planning", :plugin => "redmine_budget_and_reporting" %>
 
 <script type="text/javascript">
 
@@ -50,25 +50,22 @@ function reload_dialog(url){
 
 </script>
 
-<h2>Plannungsuebersicht</h2>
-
-<div class="index_container">
-  <div class="index_overflow_container">
-    <div class="description">Projekt:</div>
-    <div class="description_value"><%= @project.name %></div>
-  </div>
-  <div class="index_overflow_container">
-    <div class="description">Projektleiter:</div>
-    <div class="description_value">
-      <%= @project_leader ? @project_leader.map {|p| p.name }.to_sentence(:last_word_connector => ", " , :two_words_connector => ", ") : "" %>
-    </div>
-  </div>
-</div>
-
-<div class="horizontal_line"></div>
+<div class="index_heading">Projektinformationen</div>
+<table class="projectinformation">
+  <tr>
+    <td>Projekt:</td>
+    <td><%= @project.name %></td>
+  </tr>
+  <tr>
+    <td>Projektleiter:</td>
+    <td><%= @project_leader ? @project_leader.map {|p| p.name }.to_sentence(:last_word_connector => ", " , :two_words_connector => ", ") : "" %></td>
+  </tr>
+</table>
+<br>
+<hr>
 
 <div class="index_heading">Meilensteine:</div>
-<table>
+<table class="forecast">
   <tr>
     <th>Meilenstein</th>
     <th>geplannt</th>
@@ -89,10 +86,10 @@ function reload_dialog(url){
   <% end %>
 </table>
 
-<div class="horizontal_line"></div>
+<br>
 
 <div class="index_heading">Budget</div>
-<table>
+<table class="forecast">
   <tr>
     <th></th>
     <th>geplannt</th>

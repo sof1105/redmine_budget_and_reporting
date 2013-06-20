@@ -20,7 +20,7 @@
 <div class="budget_heading">Übersicht</div>
 
 <div class="budget_container">
-  <table>
+  <table class="budget_overview">
     <tr>
       <td>Geplannt <%= @overall_costs[:planned].nil? ? "" : "am " + I18n.l(@overall_costs[:planned].created_on) %>: </td>
       <td><%= @overall_costs[:planned].nil? ? "---" :
