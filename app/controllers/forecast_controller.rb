@@ -47,7 +47,7 @@ class ForecastController < ApplicationController
         end
         
         if not @errors
-          forecast =VersiondateForecast.find_or_initialize_by_planned_date(planned_date)
+          forecast = VersiondateForecast.find_or_initialize_by_planned_date_and_version_id(planned_date, @version.id)
           forecast.update_attributes({
             :forecast_date => forecast_date,
             :planned_date => planned_date,
@@ -63,7 +63,7 @@ class ForecastController < ApplicationController
           @errors = "Kein Datum angegeben"
       end
       
-      @forecasts = VersiondateForecast.until(Date.today, @version.id)
+      @forecasts = VersiondateForecast.until(Date.today, @version.id).reverse
     else
       @errors = "Version nicht gefunden"
     end
@@ -149,7 +149,7 @@ class ForecastController < ApplicationController
       end
       
       if not @errors
-        forecast = ProjectbudgetForecast.find_or_initialize_by_planned_date(planned_date)
+        forecast = ProjectbudgetForecast.find_or_initialize_by_planned_date_and_project_id(planned_date, @project.id)
         forecast.update_attributes({
           :budget => budget,
           :planned_date => planned_date,

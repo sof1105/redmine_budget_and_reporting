@@ -8,6 +8,7 @@ scope "/projects/:project_id" do
   get "/budget/individual/details" => "budget#show_individual_costs"
   
   get "/reporting" => "reporting#index"
+  get "/reporting/export/all_projects" => "reporting#export_excel_all_projects"
   get "/reporting/gan_file" => "reporting#choose_gan_file"
   post "/reporting/upload" => "reporting#upload_gan_file"
   

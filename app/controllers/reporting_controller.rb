@@ -26,6 +26,7 @@ class ReportingController < ApplicationController
     end
     @version_forecasts.sort! {|a,b| a[0].name <=> b[0].name}
     
+    salary_custom_id = UserCustomField.where(:name => "Gehalt").first.id
     
     @budget = []
     budget_issue = 0
@@ -40,6 +41,14 @@ class ReportingController < ApplicationController
     @budget.append(ProjectbudgetForecast.until(date, @project.id).first)
 
   end
+  
+  def export_excel_all_projects
+    @projects = Project.all.reject {|p| p.module_enabled?(:budget).nil?}
+    @projectleader_role = Role.where(:name => "Projektleiter").first
+    
+    render :xlsx => 'all_projects', :filename => "budget.xlsx", :disposition => "attachment" 
+  end
+  
   
   # upload new gan-file ---------------------------------
   def choose_gan_file

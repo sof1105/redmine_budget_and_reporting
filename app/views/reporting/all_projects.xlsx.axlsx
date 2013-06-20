@@ -1,0 +1,84 @@
+wb = xlsx_package.workbook
+
+style_normal = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :left, :vertical => :center}
+style_heading_top = wb.styles.add_style :sz => 12, :b => true, :border => {:style => :hair, :color => "000000", :edges => [:top]}
+style_heading_left = wb.styles.add_style :sz => 12, :b => true, :border => {:style => :hair, :color => "000000", :edges => [:left, :top]}
+style_heading_right = wb.styles.add_style :sz => 12, :b => true, :border => {:style => :hair, :color => "000000", :edges => [:right, :top]}
+style_projectleader_left = wb.styles.add_style :sz => 10, :b => true, :border => {:style => :hair, :color => "000000", :edges => [:left]}
+style_projectleader_right = wb.styles.add_style :sz => 10, :b => false, :border => {:style => :hair, :color => "000000", :edges => [:right]}
+style_tableheading = wb.styles.add_style :sz => 10, :b => true, :alignment => {:horizontal => :center, :vertial => :center},
+                                         :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
+style_table_normal = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center},
+                                        :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
+style_table_left = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :left, :vertial => :center},
+                                      :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
+style_empty_left = wb.styles.add_style :sz => 10, :b => false, :border => {:style => :hair, :color => "000000", :edges => [:left]}
+style_empty_right = wb.styles.add_style :sz => 10, :b => false, :border => {:style => :hair, :color => "000000", :edges => [:right]}
+style_currency = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center}, :num_fmt => 7, # 7 is format ###.###,## €
+                                     :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
+style_date = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center}, :num_fmt => Axlsx::NUM_FMT_YYYYMMDD,
+                                 :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
+
+wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :fit_to_height => 1, :fit_to_height => 1}) do |sheet|
+  
+  @projects.each do |project|
+    
+    # add empty row on top (dont want to start at the beginning of the sheet)
+    sheet.add_row([nil], :height => 14)
+    
+    # set projectnumber to first part of identifier, if it starts with "ed"
+    projectnumber = project.identifier.split("-").first
+    if projectnumber && projectnumber[0,2] == "ed"
+      projectnumber = projectnumber.upcase
+    else
+      projectnumber = ""
+    end
+    sheet.add_row(["Projekt-Nr.:", projectnumber, project.name, nil, nil], :height => 14, 
+            :style => [style_heading_left, style_heading_top, style_heading_top, style_heading_top, style_heading_right])
+    
+    
+    # add projectleaders
+    projectleaders = project.users_by_role[@projectleader_role].try(:map) {|u| u.name}
+    projectleaders = ["Projektleiter:"] << projectleaders.try(:join,", ") 
+    projectleaders = projectleaders + [nil, nil, nil]
+    sheet.add_row(projectleaders, :height => 14, :style => [style_projectleader_left, style_normal, nil, nil, style_projectleader_right])
+    
+    # add empty row
+    sheet.add_row([nil, nil, nil, nil, nil], :height => 14, :style => [style_empty_left, nil, nil, nil, style_empty_right])
+    
+    # add table heading
+    sheet.add_row([nil, "geplannt", "Prognose", "IST-Wert", "Delta"], :height => 14, :style => style_tableheading)
+    
+    # add budget information
+    planned_budget = project.PlannedBudget.latest.try(:budget)
+    budget_forecast = project.ProjectbudgetForecast.latest.try(:budget)
+    
+    salary_custom_id = UserCustomField.where(:name => "Gehalt").first.id
+    budget_issue = 0
+    TimeEntry.where(:project_id => project.id).each do |entry|
+      budget_issue += costs_for_TimeEntry(entry, salary_custom_id)
+    end
+    budget_individual = IndividualItem.until(Date.today, project.id).sum(:costs)
+    delta = nil
+    
+    sheet.add_row(["Budget", planned_budget, budget_forecast, budget_issue+budget_individual, delta], :height => 14,
+                    :style =>[style_table_left, style_currency, style_currency, style_currency, style_currency])
+    
+    # add information for each version
+    project.versions.reverse.each do |v|
+        name = v.name
+        planned_date = v.effective_date || "" # empty string, but not nil, so that version name doesn't overlow into next cell
+        forecast_date = v.VersiondateForecast.latest.try(:forecast_date)
+        closed_date = nil
+        closed_date = v.fixed_issues.order("closed_on DESC").first.closed_on if v.issues_count > 0 && v.open_issues_count == 0
+        delta = nil
+        sheet.add_row([name, planned_date, forecast_date, closed_date, delta], :height => 14,
+                        :style => [style_table_left, style_date, style_date, style_date, style_date])
+    end
+    
+    sheet.add_row([nil], :height => 14)
+  
+  end
+  
+  sheet.column_widths 17, 17, 17, 17, 17
+end

@@ -10,6 +10,10 @@ class PlannedBudget < ActiveRecord::Base
     where(:project_id => project_id).order("created_on DESC").first
   end
   
+  def self.latest
+    order("created_on DESC").first
+  end
+  
   def set_created_on_date
     self.created_on = Date.today
   end

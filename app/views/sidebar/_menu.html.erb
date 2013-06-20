@@ -3,7 +3,7 @@
 <ul>
   <li><%= link_to "Budgetübersicht",{:controller => "budget", :action => "index"} %></li>
   <li><%= link_to "Plannungsübersicht", {:controller => "reporting", :action => "index"} %></li>
-  <li>Uebersicht ueber alle Projekte</li>
+  <li><%= link_to "Excel Export (alle Projekte)", {:controller => "reporting", :action => "export_excel_all_projects"} %></li>
   <li>Uebersicht ueber mehrer Monate</li>
   <li>Budget nach Personen</li>
 </ul>

@@ -13,8 +13,12 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
     UserCustomField.create({:type => "UserCustomField", :name => "Gehalt", :field_format => "float", :default_value => "50"})
   end
   
-  permission :budget_permission, {:budget => [:index]}, :public => true
-  permission :reporting_permission, {:reporting => [:index]}, :public => true
+  
+  project_module :budget do
+    permission :budget_permission, {:budget => [:index]}, :public => true
+    permission :reporting_permission, {:reporting => [:index]}, :public => true
+  end
+  
   menu :project_menu, :budget, {:controller => 'budget', :action => 'index'},
     :caption => 'Budget', :param => :project_id
   
@@ -22,8 +26,9 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
   require_dependency 'sidebar/hooks'
   
   require 'nokogiri'
+  require 'axlsx_rails'
   require 'dispatcher' unless Rails::VERSION::MAJOR >= 3
-   
+  
 	if Rails::VERSION::MAJOR >= 3
 		ActionDispatch::Callbacks.to_prepare do
 			# use require_dependency if you plan to utilize development mode

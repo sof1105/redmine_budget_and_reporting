@@ -17,6 +17,10 @@ class ProjectbudgetForecast < ActiveRecord::Base
     return actual_forecast.first.budget - old_forecast.first.budget
   end
   
+  def self.latest
+    order("planned_date DESC").first
+  end
+  
   def set_created_on_date
     self.created_on = Date.today
   end

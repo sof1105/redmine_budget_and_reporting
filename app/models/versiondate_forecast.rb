@@ -18,6 +18,10 @@ class VersiondateForecast < ActiveRecord::Base
     return actual_forecast.first.forecast_date - old_forecast.first.forecast_date
   end
   
+  def self.latest
+    order("planned_date DESC").first
+  end
+  
   def set_created_on_date
     self.created_on = Date.today
   end
