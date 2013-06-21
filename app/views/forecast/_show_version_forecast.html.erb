@@ -7,7 +7,7 @@
 <% if @forecasts.nil? || (@forecasts && @forecasts.empty?) %>
   <h3>Bisher keine Prognosen erstellt</h3>
 <% else %>
-  <table>
+  <table class="forecast small">
     <tr>
       <th>Prognose</th>
       <th>erstellt am</th>
@@ -16,57 +16,63 @@
     <tr>
       <td><%= I18n.l(forecast.forecast_date) %></td>
       <td><%= I18n.l(forecast.planned_date) %></td>
-      <td><a onclick="reload_dialog('<%= url_for({:controller => "forecast", :action => "delete_versiondate_forecast",
-                                :project_id => @project.id, :forecast_id => forecast.id}) %>')" href="#">
-          <span class="icon icon-del"/>löschen?</a></td>
+      <td>
+      <% if User.current.allowed_to?({:controller => "forecast", :action => "delete_versiondate_forecast"}, @project) %>
+        <a onclick="reload_dialog('<%= url_for({:controller => "forecast", :action => "delete_versiondate_forecast",
+                                                :project_id => @project.id, :forecast_id => forecast.id}) %>')" href="#">
+          <span class="icon icon-del"/>löschen?</a>
+      <% end %>
+      </td>
     </tr>
   <% end %>
   </table>
 <% end %>
 <br>
 
-<%# add new forecast %>
-<h4> Neue Prognose anlegen</h4>
-<%= form_tag({}, :id =>"new_forecast_form") do %>
-  <table>
-    <tr>
-      <td><%=label_tag(:forecast_date, "Prognose: ") %></td>
-      <td><%= text_field_tag(:forecast_date, nil, :size => 10) %></td>
-    </tr>
-    <tr>
-      <td><%=label_tag(:planned_date, "Geplant am: ")%></td>
-      <td><%= text_field_tag(:planned_date, nil, :size => 10) %></td>
-    </tr>
-    <tr style="text-align:right">
-      <td colspan="2"><%= submit_tag("Prognose speichern")%></td>
-    </tr>
-  </table>
-<% end %>
+<%# add new forecast if user is allowed_to %>
+<% if User.current.allowed_to?({:controller => "forecast", :action => "new_versiondate_forecast"}, @project) %>
+  <h4> Neue Prognose anlegen</h4>
+  <%= form_tag({}, :id =>"new_forecast_form") do %>
+    <table>
+      <tr>
+        <td><%=label_tag(:forecast_date, "Prognose: ") %></td>
+        <td><%= text_field_tag(:forecast_date, nil, :size => 10) %></td>
+      </tr>
+      <tr>
+        <td><%=label_tag(:planned_date, "Geplant am: ")%></td>
+        <td><%= text_field_tag(:planned_date, nil, :size => 10) %></td>
+      </tr>
+      <tr style="text-align:right">
+        <td colspan="2"><%= submit_tag("Prognose speichern")%></td>
+      </tr>
+    </table>
+  <% end %>
 
-<script type="text/javascript">
-  //transform inputs into datepicker
-  $("#forecast_date").datepicker({
-    buttonImage: "<%= path_to_image("/images/calendar.png") %>",
-    duration: 0,
-    showOn: 'both',
-    dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
-  });
-  $("#planned_date").datepicker({
-    buttonImage: "<%= path_to_image("/images/calendar.png") %>",
-    duration: 0,
-    showOn: 'both',
-    dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
-  });
-  $("#planned_date").datepicker("setDate", "<%= I18n.l(Date.today) %>");
-  
-  // make form post an ajax call
-  $("#new_forecast_form").submit(function(event){
-    event.preventDefault();
-    $.post("<%= url_for({:controller => "forecast", :action => "new_versiondate_forecast",
-                                :version_id => @version.id, :project_id => @project.id}) %>",
-            $("#new_forecast_form").serialize(),
-            function(data){
-              $("#floating").html(data);
-            });
-  });
-</script>
+  <script type="text/javascript">
+    //transform inputs into datepicker
+    $("#forecast_date").datepicker({
+      buttonImage: "<%= path_to_image("/images/calendar.png") %>",
+      duration: 0,
+      showOn: 'both',
+      dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
+    });
+    $("#planned_date").datepicker({
+      buttonImage: "<%= path_to_image("/images/calendar.png") %>",
+      duration: 0,
+      showOn: 'both',
+      dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
+    });
+    $("#planned_date").datepicker("setDate", "<%= I18n.l(Date.today) %>");
+    
+    // make form post an ajax call
+    $("#new_forecast_form").submit(function(event){
+      event.preventDefault();
+      $.post("<%= url_for({:controller => "forecast", :action => "new_versiondate_forecast",
+                                  :version_id => @version.id, :project_id => @project.id}) %>",
+              $("#new_forecast_form").serialize(),
+              function(data){
+                $("#floating").html(data);
+              });
+    });
+  </script>
+<% end %>

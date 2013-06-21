@@ -3,6 +3,7 @@ class ReportingController < ApplicationController
   include BudgetCalculating
   
   before_filter :set_project
+  before_filter :authorize, :only => [:choose_gan_file, :upload_gan_file]
   
   def index
     # show overview over actual project (depending on date)
@@ -40,7 +41,7 @@ class ReportingController < ApplicationController
   end
   
   def export_excel_all_projects
-    @projects = Project.all.reject {|p| p.module_enabled?(:budget).nil?}
+    @projects = Project.all.reject {|p| p.module_enabled?(:reporting).nil? || !p.active? }
     @projectleader_role = Role.where(:name => "Projektleiter").first
     
     render :xlsx => 'all_projects', :filename => "Projektreporting_alle.xlsx", :disposition => "attachment" 
@@ -52,7 +53,16 @@ class ReportingController < ApplicationController
     
     render :xlsx => 'all_projects', :filename => "Projektreporting_einzel.xlsx", :disposition => "attachment" 
   end
-  
+
+  def export_excel_own_projects
+    @projectleader_role = Role.where(:name => "Projektleiter").first
+    @projects = Project.all.select do |p| 
+      projectleaders = p.users_by_role[@projectleader_role]
+      p.module_enabled?(:reporting) && p.active? && projectleaders.try(:include?, User.current)
+    end
+    
+    render :xlsx => 'all_projects', :filename => "Projektreporting_einzel.xlsx", :disposition => "attachment"
+  end
   
   # upload new gan-file ---------------------------------
   def choose_gan_file

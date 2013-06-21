@@ -31,3 +31,7 @@ table.forecast td{
 table.forecast td:first-child{
   text-align: left;
 }
+
+table.forecast.small td{
+  padding:2px;
+}

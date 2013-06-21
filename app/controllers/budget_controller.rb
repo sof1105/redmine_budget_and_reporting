@@ -5,6 +5,7 @@ class BudgetController < ApplicationController
   
   include BudgetCalculating
   before_filter :set_project
+  before_filter :authorize, :only => [:choose_individual_file, :parse_individual_file]
   
   def index
     
@@ -42,31 +43,6 @@ class BudgetController < ApplicationController
   def show_individual_costs
     @items = IndividualItem.where(:project_id => @project.id).order("booking_date ASC")
     render :partial => "show_individual_costs"
-  end
-  
-  
-  def new_budget_plan
-    if not PlannedBudget.create({:project_id => @project.id, :budget => params[:budget].to_f})
-      flash[:error] = "Fehler beim speichern"
-    end
-    redirect_to :controller => "budget", :action => "index"
-  end
-  
-  def delete_budget_plan
-    if params[:budget_id] && PlannedBudget.exists?(params[:budget_id])
-      unless PlannedBudget.find(params[:budget_id]).destroy
-        flash[:error]= "Konnte geplanntes Budget nicht loeschen"
-      end
-    else
-      flash[:error] = "Keine id angegeben"
-    end
-    @budgets = PlannedBudget.where(:project_id => @project.id).order("created_on DESC")
-    redirect_to :controller => "budget", :action => "index"
-  end
-  
-  def show_all_budget_plans
-    @budgets = PlannedBudget.where(:project_id => @project.id).order("created_on DESC")
-    render :partial => "show_budget_plan"
   end
   
   # process a csv file with individual costs -------------

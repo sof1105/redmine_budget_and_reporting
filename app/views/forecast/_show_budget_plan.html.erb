@@ -7,7 +7,7 @@
 <% if @plan.nil? %>
   <h3>Bisher keine Plannung erstellt</h3>
 <% else %>
-  <table>
+  <table class="forecast small">
     <tr>
       <th>Geplannt</th>
       <th>erstellt am</th>
@@ -15,36 +15,42 @@
     <tr>
       <td><%= number_to_currency(@plan.budget) %></td>
       <td><%= I18n.l(@plan.created_on) %></td>
-      <td><a onclick="reload_dialog('<%= url_for({:controller => "forecast", :action => "delete_budget_plan",
+      <td>
+      <% if User.current.allowed_to?({:controller => "forecast", :action => "delete_budget_plan"}, @project) %>
+        <a onclick="reload_dialog('<%= url_for({:controller => "forecast", :action => "delete_budget_plan",
                                 :project_id => @project.id, :plan_id => @plan.id}) %>')" href="#">
-          <span class="icon icon-del"/>löschen?</a></td>
+          <span class="icon icon-del"/>löschen?</a>
+      <% end %>
+      </td>
     </tr>
   </table>
 <% end %>
 <br>
 
-<%# add new forecast %>
-<h4> Neue Prognose anlegen</h4>
-<%= form_tag({}, :id =>"new_plan_form") do %>
-  <table>
-    <tr>
-      <td><%=label_tag(:budget, "Budget Plannung: ") %></td>
-      <td><%= text_field_tag(:budget, nil, :size => 10, :type =>"number", :step => "any") %></td>
-    </tr>
-    <tr style="text-align:right">
-      <td colspan="2"><%= submit_tag("Planung speichern")%></td>
-    </tr>
-  </table>
-<% end %>
+<% if User.current.allowed_to?({:controller => "forecast", :action => "new_budget_plan"}, @project) %>
+  <%# add new forecast %>
+  <h4> Neue Prognose anlegen</h4>
+  <%= form_tag({}, :id =>"new_plan_form") do %>
+    <table>
+      <tr>
+        <td><%=label_tag(:budget, "Budget Plannung: ") %></td>
+        <td><%= text_field_tag(:budget, nil, :size => 10, :type =>"number", :step => "any") %></td>
+      </tr>
+      <tr style="text-align:right">
+        <td colspan="2"><%= submit_tag("Planung speichern")%></td>
+      </tr>
+    </table>
+  <% end %>
 
-<script type="text/javascript">
-  // make form post an ajax call
-  $("#new_plan_form").submit(function(event){
-    event.preventDefault();
-    $.post("<%= url_for({:controller => "forecast", :action => "new_budget_plan", :project_id => @project.id})%>",
-            $("#new_plan_form").serialize(),
-            function(data){
-              $("#floating").html(data);
-            });
-  });
-</script>
+  <script type="text/javascript">
+    // make form post an ajax call
+    $("#new_plan_form").submit(function(event){
+      event.preventDefault();
+      $.post("<%= url_for({:controller => "forecast", :action => "new_budget_plan", :project_id => @project.id})%>",
+              $("#new_plan_form").serialize(),
+              function(data){
+                $("#floating").html(data);
+              });
+    });
+  </script>
+<% end %>

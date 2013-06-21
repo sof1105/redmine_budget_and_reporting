@@ -1,4 +1,6 @@
-<br><br>
-<div>
+<% if User.current.allowed_to?({:controller => "reporting", :action => "choose_gan_file"}, @project) %>
+  <br><br>
+  <div>
     <span class="icon icon-reload"><%= link_to("Neue Gan-File hochladen", {:controller => "reporting", :action => "choose_gan_file"}) %>
-</div>
+  </div>
+<% end %>

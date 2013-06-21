@@ -14,18 +14,23 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
                             :default_value => "50", :is_required => true, :editable => true, :visible => false})
   end
   
+  # make sure ProjectCustomField for comment exists
   if ProjectCustomField.where(:name => "Bemerkung Projektreporting").empty?
     ProjectCustomField.create({:type => "ProjectCustomField", :name => "Bemerkung Projektreporting", :field_format => "text",
                                :visible => true, :editable => true})
   end
   
-  project_module :budget do
-    permission :budget_permission, {:budget => [:index]}, :public => true
-    permission :reporting_permission, {:reporting => [:index]}, :public => true
+  project_module :reporting do
+    permission :reporting, {:reporting => :index}, :public => true
+    permission :edit_forecasts, {:forecast => [:new_versiondate_forecast, :delete_versiondate_forecast,
+                                               :new_budget_forecast, :delete_budget_forecast,
+                                               :new_budget_plan, :delete_budget_plan ],
+                                 :reporting => [:choose_gan_file, :upload_gan_file]}
+    permission :upload_cost_file, {:budget => [:choose_individual_file, :parse_individual_file]}
   end
   
-  menu :project_menu, :budget, {:controller => 'budget', :action => 'index'},
-    :caption => 'Budget', :param => :project_id
+  menu :project_menu, :reporting, {:controller => 'reporting', :action => 'index'},
+    :caption => 'Reporting', :param => :project_id
   
   require_dependency 'gantchart_spenthours/hooks'
   require_dependency 'sidebar/hooks'

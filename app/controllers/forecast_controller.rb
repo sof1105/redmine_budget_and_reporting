@@ -4,6 +4,9 @@ class ForecastController < ApplicationController
   unloadable
   
   before_filter :set_project
+  before_filter :authorize, :only => [:new_versiondate_forecast, :delete_versiondate_forecast,
+                                      :new_budget_forecast, :delete_budget_forecast,
+                                      :new_budget_plan, :delete_budget_plan]
 
   def show_versiondate_forecast
     date = Date.today
