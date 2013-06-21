@@ -1,3 +1,20 @@
+<%if @failure && !@failure.empty? %>
+ <br>
+  <h4>Folgende Zeilen konnten nicht erstellt werden: </h4>
+  <ul>
+  <% @failure.each do |row, error| %>
+      <% mapping = [row[0], row[2], row[5], row[9], row[10]] %>
+      <li><%= mapping.map{|e|e.to_s}.join(", ") %>
+        <ul>
+          <li>Grund: <%= error %></li>
+        </ul>
+      </li>
+  <% end %>
+  </ul>
+  <br>
+<% end %>
+<br>
+<h4>Neue Datei hochladen</h4>
 <%= form_tag({:controller => "budget", :action =>'parse_individual_file'}, :method => "post", :multipart => true) do %>
   <%= file_field_tag(:individual_file, :accept => ".csv") %>
   <%= submit_tag %>

@@ -1,12 +1,14 @@
 class ReportingController < ApplicationController
   unloadable
+  include BudgetCalculating
   
   before_filter :set_project
   
   def index
     # show overview over actual project (depending on date)
     date = Date.today
-    
+    salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
+
     role = Role.where(:name => "Projektleiter").first
     unless role.nil?
       @project_leader = @project.users_by_role[role]
@@ -25,15 +27,10 @@ class ReportingController < ApplicationController
       @version_forecasts.append(temp)
     end
     @version_forecasts.sort! {|a,b| a[0].name <=> b[0].name}
-    
-    salary_custom_id = UserCustomField.where(:name => "Gehalt").first.id
-    
+        
     @budget = []
-    budget_issue = 0
-    TimeEntry.where(:project_id => @project.id).each do |entry|
-      budget_issue += costs_for_TimeEntry(entry, salary_custom_id)
-    end
-    budget_individual = IndividualItem.until(date, @project.id).sum(:costs)
+    budget_issue = costs_for_all_issues(@project, date, salary_customfield)
+    budget_individual = costs_for_individualitems(@project, date)
     
     @budget.append(budget_issue)
     @budget.append(budget_individual)
@@ -46,7 +43,14 @@ class ReportingController < ApplicationController
     @projects = Project.all.reject {|p| p.module_enabled?(:budget).nil?}
     @projectleader_role = Role.where(:name => "Projektleiter").first
     
-    render :xlsx => 'all_projects', :filename => "budget.xlsx", :disposition => "attachment" 
+    render :xlsx => 'all_projects', :filename => "Projektreporting_alle.xlsx", :disposition => "attachment" 
+  end
+  
+  def export_excel_single_project
+    @projects = Project.where(:id => @project.id)
+    @projectleader_role = Role.where(:name => "Projektleiter").first
+    
+    render :xlsx => 'all_projects', :filename => "Projektreporting_einzel.xlsx", :disposition => "attachment" 
   end
   
   
@@ -202,14 +206,6 @@ class ReportingController < ApplicationController
     xml_node.children.each do |child|
       update_issue_from_xml(child, version, tracker, issue_list, levels)
     end
-  end
-  
-  
-  def costs_for_TimeEntry(entry, salary_id = nil)
-    if salary_id.nil?
-      salary_id = UserCustomField.where(:name => "Gehalt").first.id
-    end
-    return (User.find(entry.user_id).custom_field_value(salary_id) || 50).to_f * entry.hours
   end
   
   def set_project

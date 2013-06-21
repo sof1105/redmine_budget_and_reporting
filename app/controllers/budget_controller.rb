@@ -1,11 +1,16 @@
+#encoding: utf-8
+
 class BudgetController < ApplicationController
   unloadable
   
+  include BudgetCalculating
   before_filter :set_project
   
   def index
     
     date = Date.today
+    salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
+    
     # show actual budget for project
     @overall_costs = {}
     @costs_per_issue = {}
@@ -14,15 +19,8 @@ class BudgetController < ApplicationController
     # the overall costs of the project ---------------------------------------------------
     @overall_costs[:planned] = PlannedBudget.latest_budget_for(@project.id)
     @overall_costs[:forecast] = ProjectbudgetForecast.until(date, @project.id).first
-    @overall_costs[:individual] = IndividualItem.until(date, @project.id).sum(:costs)
-    @overall_costs[:issues] = 0
-    
-    salary_custom_id = UserCustomField.where(:name => "Gehalt").first.id
-    
-    all_timelogs = TimeEntry.where(:project_id => @project.id)
-    all_timelogs.each do |entry|
-      @overall_costs[:issues] += costs_for_TimeEntry(entry, salary_custom_id)
-    end
+    @overall_costs[:individual] = costs_for_individualitems(@project, date)
+    @overall_costs[:issues] = costs_for_all_issues(@project, date, salary_customfield)
     
     # costs per issue -------------------------------------------------------------------
     all_issues = Issue.where(:project_id => @project.id).group_by(&:fixed_version)
@@ -31,11 +29,7 @@ class BudgetController < ApplicationController
       # to this schema: [[issue, total_costs][...]...]
       @costs_per_issue[version] = []
       issue_list.each do |issue|
-        all_TimeEntries = TimeEntry.where(:issue_id => issue.id)
-        total_costs = 0
-        all_TimeEntries.each do |entry|
-          total_costs += costs_for_TimeEntry(entry, salary_custom_id)
-        end
+        total_costs = costs_for_issue(issue, date, salary_customfield)
         @costs_per_issue[version].append([issue, total_costs])
       end
     end
@@ -93,11 +87,12 @@ class BudgetController < ApplicationController
     all_projects = Project.all
     project_list = {}
     all_projects.each {|p| project_list[p.identifier.split('-').first] = p}
+    file = params[:individual_file]
     
-    CSV.parse(params[:individual_file].read, {:col_sep => ";", :headers => false}) do |row|
-      logger.info(row)
+    rows = CSV.read(file.path, {:col_sep => ";", :headers => false})
+    rows.each do |row|  
       if row.length != 11 
-        @failure.append(row)
+        @failure.append([row, "Zeile nicht Vollständig"])
         next
       end
       
@@ -115,9 +110,10 @@ class BudgetController < ApplicationController
       row[8] = (row[8] || "0").sub('.', '').sub(',','.').to_f
       
       begin
-        row[9] = Date.strptime(row[9], "%m.%d.%Y")
-        row[10] = Date.strptime(row[10], "%m.%d.%Y")
+        row[9] = Date.parse(row[9])
+        row[10] = Date.parse(row[10])
       rescue
+        @failure.append([row, "Falsches Datumsformat. Im Excel sollte deutsches Format eingestellt sein"])
         next
       end
       
@@ -134,24 +130,17 @@ class BudgetController < ApplicationController
                                       :cost_description => row[2], :project_id => row[5].id,
                                       :label => row[6], :amount => row[7], :costs => row[8],
                                       :booking_date => row[9], :receipt_date => row[10])
-          @failure.append(row)
+          @failure.append([row, "Fehler beim speichern"])
         end
       end
     end
     
-    redirect_to :controller => "budget", :action => "choose_individual_file"
+    flash[:error] = "Es sind Fehler beim hochladen aufgetreten" if !@failure.empty?
+    flash[:notice] = "Datei hochgeladen" if @failure.empty?
+    render :choose_individual_file
   end
   
   # ------------ Helper methods --------------------
-  
-  def costs_for_TimeEntry(entry, salary_id = nil)
-    if salary_id.nil?
-      salary_id = UserCustomField.where(:name => "Gehalt").first.id
-    end
-    return (User.find(entry.user_id).custom_field_value(salary_id) || 50).to_f * entry.hours
-  end
-  
-  
   def set_project
     if params[:project_id]
       begin

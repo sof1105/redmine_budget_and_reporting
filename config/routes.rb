@@ -9,6 +9,7 @@ scope "/projects/:project_id" do
   
   get "/reporting" => "reporting#index"
   get "/reporting/export/all_projects" => "reporting#export_excel_all_projects"
+  get "/reporting/export/single_project" => "reporting#export_excel_single_project"
   get "/reporting/gan_file" => "reporting#choose_gan_file"
   post "/reporting/upload" => "reporting#upload_gan_file"
   
