@@ -1,15 +1,21 @@
 <br>
 <h4>Projekt Reporting </h4>
 <ul>
-  <li><%= link_to "Budgetübersicht",{:controller => "budget", :action => "index"} %></li>
   <li><%= link_to "Plannungsübersicht", {:controller => "reporting", :action => "index"} %></li>
-  <li>Uebersicht ueber alle Projekte</li>
-  <li>Uebersicht ueber mehrer Monate</li>
+  <li><%= link_to "Budgetübersicht",{:controller => "budget", :action => "index"} %></li>
+  <li><%= link_to "Excel Export (für dieses Projekt)", {:controller => "reporting", :action => "export_excel_single_project"} %></li>
+  <li><%= link_to "Excel Export (alle Projekte)", {:controller => "reporting", :action => "export_excel_all_projects"} %></li>
+  <li><%= link_to "Excel Export (alle Projekte in denen ich Projektleiter bin)", {:controller => "reporting", 
+            :action => "export_excel_own_projects"} %></li>
   <li>Budget nach Personen</li>
 </ul>
 
 <h4> Uploads </h4>
 <ul>
-  <li><%= link_to "Neue Gan-Datei", {:controller => "reporting", :action => "choose_gan_file"} %></li>
-  <li><%= link_to "Neue Einzelkosten-Liste", {:controller => 'budget', :action => 'choose_individual_file'} %> </li>
+  <% if User.current.allowed_to?({:controller => "reporting", :action => "choose_gan_file"}, @project) %>
+    <li><%= link_to "Neue Gan-Datei", {:controller => "reporting", :action => "choose_gan_file"} %></li>
+  <% end %>
+  <% if User.current.allowed_to?({:controller => "budget", :action => "choose_individual_file"}, @project) %>
+    <li><%= link_to "Neue Einzelkosten-Liste", {:controller => 'budget', :action => 'choose_individual_file'} %> </li>
+  <% end %>
 </ul>

@@ -8,6 +8,21 @@ scope "/projects/:project_id" do
   get "/budget/individual/details" => "budget#show_individual_costs"
   
   get "/reporting" => "reporting#index"
+  get "/reporting/export/all_projects" => "reporting#export_excel_all_projects"
+  get "/reporting/export/single_project" => "reporting#export_excel_single_project"
+  get "/reporting/export/own_projects" => "reporting#export_excel_own_projects"
   get "/reporting/gan_file" => "reporting#choose_gan_file"
   post "/reporting/upload" => "reporting#upload_gan_file"
+  
+  get "/forecast/version/:version_id/" => "forecast#show_versiondate_forecast"
+  get "/forecast/version/:forecast_id/delete" => "forecast#delete_versiondate_forecast"
+  post "/forecast/version/:version_id/new" => "forecast#new_versiondate_forecast"
+  
+  get "/forecast/budget/" => "forecast#show_budget_forecast"
+  get "/forecast/budget/:forecast_id/delete" => "forecast#delete_budget_forecast"
+  post "/forecast/budget/new" => "forecast#new_budget_forecast"
+  
+  get "/plan/budget/plan" => "forecast#show_budget_plan"
+  get "/plan/budget/:plan_id/delete" => "forecast#delete_budget_plan"
+  post "/plan/budget/new" => "forecast#new_budget_plan"
 end

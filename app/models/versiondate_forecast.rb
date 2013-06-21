@@ -2,9 +2,12 @@ class VersiondateForecast < ActiveRecord::Base
   unloadable
   
   before_save :set_created_on_date
+  validates_presence_of :planned_date
+  validates_presence_of :forecast_date
+  validates_presence_of :version_id
 
-  def self.until(month, project_id)
-    where("project_id = ? AND planned_date <= ? ORDER BY planned_date DESC", project_id, month.end_of_month)
+  def self.until(month, version_id)
+    where("version_id = ? AND planned_date <= ?", version_id, month.end_of_month).order("planned_date DESC")
   end
   
   def differenz(number_of_months)
@@ -13,6 +16,10 @@ class VersiondateForecast < ActiveRecord::Base
     old_forecast = VersionForecast.until(months_ago, self.project_id)
     
     return actual_forecast.first.forecast_date - old_forecast.first.forecast_date
+  end
+  
+  def self.latest
+    order("planned_date DESC").first
   end
   
   def set_created_on_date

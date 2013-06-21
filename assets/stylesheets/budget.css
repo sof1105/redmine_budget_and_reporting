@@ -39,7 +39,7 @@
 
 .budget_issue_name{
   float:left;
-  width: 250px;
+  width: 300px;
 }
 
 .budget_issue_progress{
@@ -137,5 +137,9 @@
 
 .budget_individual_detail{
   padding-top: 15px;
+}
+
+table.budget_overview td:first-child{
+  font-weight: bold;
 }
 

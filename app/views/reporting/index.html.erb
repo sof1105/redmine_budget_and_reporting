@@ -1,19 +1,140 @@
-<%= stylesheet_link_tag "reporting", :plugin => "redmine_budget_and_reporting" %>
-<h2>Plannungsuebersicht</h2>
+<%= stylesheet_link_tag "planning", :plugin => "redmine_budget_and_reporting" %>
 
-<div class="index_container">
-  <div class="index_overflow_container">
-    <div class="description">Projekt:</div>
-    <div class="description_value"><%= @project.name %></div>
-  </div>
-  <div class="index_overflow_container">
-    <div class="description">Projektleiter:</div>
-    <div class="description_value">
-      <%= @project_leader ? @project_leader.map {|p| p.name }.to_sentence(:last_word_connector => ", " , :two_words_connector => ", ") : "" %>
-    </div>
-  </div>
-</div>
+<script type="text/javascript">
 
-<div class="horizontal_line"></div>
+function open_versiondate_dialog(url){
+   $.get(url, function(data){
+      $("#floating").html(data);
+      $("#floating").dialog({
+        modal: true,
+        title: "Meilenstein Plannung",
+        width: 500,
+        open: function(event, ui){
+                // remove focus on first elemente and hide already opend datepicker div
+                $(".hasDatepicker").datepicker("hide");
+                $(this).find('*').blur();
+              },
+        close: function(event, ui){
+                 // reload current url
+                 window.location.reload(true);
+                 // use argument true, to really reload page (because its dynamically generated)
+               }
+      });
+    });
+};
+
+function open_budget_dialog(url){
+   $.get(url, function(data){
+      $("#floating").html(data);
+      $("#floating").dialog({
+        modal: true,
+        title: "Budget Plannung",
+        width: 500,
+        open: function(event, ui){
+                // remove focus on first elemente and hide already opend datepicker div
+                $(".hasDatepicker").datepicker("hide");
+                $(this).find('*').blur();
+              },
+        close: function(event, ui){
+                 // reload current url
+                 window.location.reload(true);
+                 // use argument true, to really reload page (because its dynamically generated)
+               }
+      });
+    });
+};
+
+function reload_dialog(url){
+  $.get(url, function(data){
+    $("#floating").html(data);
+  });
+};
+
+</script>
+
+<div class="index_heading">Projektinformationen</div>
+<table class="projectinformation">
+  <tr>
+    <td>Projekt:</td>
+    <td><%= @project.name %></td>
+  </tr>
+  <tr>
+    <td>Projektleiter:</td>
+    <td><%= @project_leader ? @project_leader.map {|p| p.name }.to_sentence(:last_word_connector => ", " , :two_words_connector => ", ") : "" %></td>
+  </tr>
+  <tr>
+    <td>Bemerkung:</td>
+    <% project_customfield = ProjectCustomField.where(:name => "Bemerkung Projektreporting").first %>
+    <td><%= @project.custom_field_value(project_customfield.id) %></td>
+  </tr>
+</table>
+<br>
+<hr>
 
 <div class="index_heading">Meilensteine:</div>
+<table class="forecast">
+  <tr>
+    <th>Meilenstein</th>
+    <th>geplannt</th>
+    <th>Prognose</th>
+    <th>Ist-Wert</th>
+  </tr>
+  <% @version_forecasts.each do |forecast| %>
+    <tr>
+      <td><%= link_to forecast[0].name, {:controller => "versions", :action => "show", :id => forecast[0].id} %></td>
+      <td><%= forecast[0].effective_date.nil? ? "----------------" : I18n.l(forecast[0].effective_date) %>
+        <% if User.current.allowed_to?({:controller => "versions", :action => "edit"}, @project) %>
+          <%= link_to '<span class="icon icon-edit">'.html_safe, {:controller => "versions", :action => "edit", :id => forecast[0].id} %>
+        <% else %>
+          <%= link_to '<span class="icon icon-move">'.html_safe, {:controller => "versions", :action => "show", :id => forecast[0].id} %>
+        <% end %>
+      </td>
+      <td><%= forecast[1].nil? ? "----------------" : I18n.l(forecast[1].forecast_date) %>
+        <a href="#" onClick="open_versiondate_dialog('<%=url_for({:controller => "forecast", :action => "show_versiondate_forecast",
+                                                                  :version_id => forecast[0].id.to_s, :project_id => @project.id})%>')">
+        <% if User.current.allowed_to?({:controller => "forecast", :action => "new_versiondate_forecast"}, @project) %>
+          <span class="icon icon-edit"></a>
+        <% else %>
+          <span class="icon icon-move"></a>
+        <% end %>
+      </td>
+      <td><%= forecast[2].nil? ? "----------------" : I18n.l(forecast[2].to_date) %></td>
+    </tr>
+  <% end %>
+</table>
+
+<br>
+
+<div class="index_heading">Budget</div>
+<table class="forecast">
+  <tr>
+    <th></th>
+    <th>geplannt</th>
+    <th>Prognose</th>
+    <th>Ist-Wert</th>
+  </tr>
+  <tr>
+    <td>Kosten</td>
+    <td><%= @budget[2].nil? ? "---" : number_to_currency(@budget[2].budget)%>
+      <a href= "#" onClick="open_budget_dialog('<%= url_for({:controller => "forecast", :action => "show_budget_plan",
+                                                             :project_id => @project.id}) %>')">
+      <% if User.current.allowed_to?({:controller => "forecast", :action => "new_budget_plan"}, @project) %>
+          <span class="icon icon-edit"></a>
+        <% else %>
+          <span class="icon icon-move"></a>
+        <% end %>
+    </td>
+    <td><%= @budget[3].nil? ? "---" : number_to_currency(@budget[3].budget) %>
+      <a href= "#" onClick="open_budget_dialog('<%= url_for({:controller => "forecast", :action => "show_budget_forecast",
+                                                             :project_id => @project.id}) %>')">
+      <% if User.current.allowed_to?({:controller => "forecast", :action => "new_budget_forecast"}, @project) %>
+          <span class="icon icon-edit"></a>
+        <% else %>
+          <span class="icon icon-move"></a>
+        <% end %>
+    </td>
+    <td><%= number_to_currency(@budget[0] + @budget[1]) || "---" %></td>
+  </tr>
+</table>
+
+<div id="floating" style="display:hidden"></div>
