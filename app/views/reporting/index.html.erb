@@ -60,6 +60,11 @@ function reload_dialog(url){
     <td>Projektleiter:</td>
     <td><%= @project_leader ? @project_leader.map {|p| p.name }.to_sentence(:last_word_connector => ", " , :two_words_connector => ", ") : "" %></td>
   </tr>
+  <tr>
+    <td>Bemerkung:</td>
+    <% project_customfield = ProjectCustomField.where(:name => "Bemerkung Projektreporting").first %>
+    <td><%= @project.custom_field_value(project_customfield.id) %></td>
+  </tr>
 </table>
 <br>
 <hr>

@@ -14,6 +14,11 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
                             :default_value => "50", :is_required => true, :editable => true, :visible => false})
   end
   
+  if ProjectCustomField.where(:name => "Bemerkung Projektreporting").empty?
+    ProjectCustomField.create({:type => "ProjectCustomField", :name => "Bemerkung Projektreporting", :field_format => "text",
+                               :visible => true, :editable => true})
+  end
+  
   project_module :budget do
     permission :budget_permission, {:budget => [:index]}, :public => true
     permission :reporting_permission, {:reporting => [:index]}, :public => true
