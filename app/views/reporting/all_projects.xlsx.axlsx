@@ -43,7 +43,7 @@ wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :
     projectleaders = ["Projektleiter:"] << projectleaders.try(:join,", ") 
     projectleaders = projectleaders + [nil, nil, nil]
     row = sheet.add_row(projectleaders, :height => 14, :style => [style_projectleader_left, style_normal, nil, nil, style_projectleader_right])
-    height = ((row.cells[1].autowidth || 1) / 72).ceil * 14
+    height = ((row.cells[1].autowidth || 1.0) / 72).ceil * 14
     row.cells[1].merge(row.cells[4])
     row.height = height
     
@@ -52,7 +52,7 @@ wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :
     project_comment = project.custom_field_value(project_customfield.id)
     row = sheet.add_row(["Bemerkung:"] + [project_comment] + [nil, nil, nil], :height => 14,
         :style => [style_projectleader_left, style_normal, nil, nil, style_projectleader_right])
-    height = ((row.cells[1].autowidth || 1) / 72).ceil * 14
+    height = ((row.cells[1].autowidth || 1.0) / 72).ceil * 14
     row.cells[1].merge(row.cells[4])
     row.height = height
     
