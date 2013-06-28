@@ -16,7 +16,7 @@ class ForecastController < ApplicationController
       if @version.project.id != @project.id
         @errors = "Meilenstein gehört nicht zum aktuellen Projekt"
       end
-      @forecasts = VersiondateForecast.until(date, @version.id).reverse
+      @forecasts = VersiondateForecast.where(:version_id => @version.id).order("planned_date ASC")
     rescue
       @errors = "Meilenstein wurde nicht gefunden"
     end
@@ -30,7 +30,7 @@ class ForecastController < ApplicationController
       if not forecast.destroy
         @errors = "Prognose konnte nicht gelöscht werden"
       end
-      @forecasts = VersiondateForecast.until(Date.today, @version.id).reverse
+      @forecasts = VersiondateForecast.where(:version_id => @version.id).order("planned_date ASC")
     else
       @errors = "Prognose existiert nicht"
     end
@@ -42,11 +42,34 @@ class ForecastController < ApplicationController
       @version = Version.find(params[:version_id])
       if params[:forecast_date] && params[:planned_date]
         
-        begin
-          forecast_date = Date.parse(params[:forecast_date])
-          planned_date = Date.parse(params[:planned_date])
-        rescue
-          @errors = "Falsches Datumsformat"
+        english_format_error = false
+        # try special english format, which ruby does not parse wrong with respect to jquery datepicker...
+
+        begin 
+            forecast_date = params[:forecast_date].split("/")
+            planned_date = params[:planned_date].split("/")
+            if forecast_date.length == 3
+              forecast_date = Date.new(forecast_date[2].to_i, forecast_date[0].to_i, forecast_date[1].to_i)
+            else
+              english_format_error = true
+            end
+            
+            if planned_date.length == 3
+              planned_date = Date.new(planned_date[2].to_i, planned_date[0].to_i, planned_date[1].to_i)
+            else
+              english_format_error = true
+            end
+          rescue
+            english_format_error = true
+          end
+        
+        if english_format_error
+          begin
+            forecast_date = Date.parse(params[:forecast_date])
+            planned_date = Date.parse(params[:planned_date])
+          rescue
+            @errors = "Falsches Datumsformat"
+          end
         end
         
         if not @errors
@@ -66,7 +89,7 @@ class ForecastController < ApplicationController
           @errors = "Kein Datum angegeben"
       end
       
-      @forecasts = VersiondateForecast.until(Date.today, @version.id).reverse
+      @forecasts = VersiondateForecast.where(:version_id => @version.id).order("planned_date ASC")
     else
       @errors = "Version nicht gefunden"
     end
@@ -122,7 +145,7 @@ class ForecastController < ApplicationController
   
   def show_budget_forecast
     date = Date.today
-    @forecasts = ProjectbudgetForecast.until(date, @project.id).reverse
+    @forecasts = ProjectbudgetForecast.until(date, @project.id).order("planned_date ASC")
     render :partial => "show_budget_forecast"
   end
   
@@ -136,19 +159,39 @@ class ForecastController < ApplicationController
       @errors = "Prognose wurde nicht gefunden"
     end
         
-    @forecasts = ProjectbudgetForecast.until(date,@project.id).reverse
+    @forecasts = ProjectbudgetForecast.until(date,@project.id).order("planned_date ASC")
     render :partial => "show_budget_forecast"
   end
   
   def new_budget_forecast
     date = Date.today
     if params[:budget] && params[:planned_date]
+    
+      english_format_error = false
+      begin 
+        planned_date = params[:planned_date].split("/")
+        
+        if planned_date.length == 3
+          planned_date = Date.new(planned_date[2].to_i, planned_date[0].to_i, planned_date[1].to_i)
+        else
+          english_format_error = true
+        end
+      rescue
+        english_format_error = true
+      end
+        
+      if english_format_error
+        begin
+          planned_date = Date.parse(params[:planned_date])
+        rescue
+          @errors = "Falsches Datumsformat"
+        end
+      end
       
       begin
-        planned_date = Date.parse(params[:planned_date])
         budget = Float(params[:budget])
       rescue
-        @errors = "Falsches Eingabeformat"
+        @errors = "Falsches Budget Eingabeformat"
       end
       
       if not @errors
@@ -167,7 +210,7 @@ class ForecastController < ApplicationController
     else
       @errors = "Kein Datum angegeben"
     end
-    @forecasts = ProjectbudgetForecast.until(date,@project.id).reverse
+    @forecasts = ProjectbudgetForecast.until(date,@project.id).order("planned_date ASC")
     render :partial => "show_budget_forecast"
   end
   

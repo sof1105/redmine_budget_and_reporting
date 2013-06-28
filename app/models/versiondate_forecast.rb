@@ -6,16 +6,21 @@ class VersiondateForecast < ActiveRecord::Base
   validates_presence_of :forecast_date
   validates_presence_of :version_id
 
-  def self.until(month, version_id)
-    where("version_id = ? AND planned_date <= ?", version_id, month.end_of_month).order("planned_date DESC")
+  def self.until(date, version_id)
+    where("version_id = ? AND planned_date <= ?", version_id, date)
   end
   
-  def differenz(number_of_months)
-    actual_forecast = VersionForecast.where(:project_id => self.project_id)
+  def self.delta(number_of_months, version_id)
+    actual_forecast = VersiondateForecast.where(:version_id => version_id).latest
     months_ago = Date.today.months_ago number_of_months
-    old_forecast = VersionForecast.until(months_ago, self.project_id)
+    months_ago = months_ago.end_of_month
+    old_forecast = VersiondateForecast.until(months_ago, version_id).latest
     
-    return actual_forecast.first.forecast_date - old_forecast.first.forecast_date
+    if actual_forecast.try(:forecast_date) && old_forecast.try(:forecast_date)
+      return actual_forecast.forecast_date - old_forecast.forecast_date
+    else
+      return 0
+    end
   end
   
   def self.latest

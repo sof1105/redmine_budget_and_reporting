@@ -19,7 +19,7 @@ class BudgetController < ApplicationController
   
     # the overall costs of the project ---------------------------------------------------
     @overall_costs[:planned] = PlannedBudget.latest_budget_for(@project.id)
-    @overall_costs[:forecast] = ProjectbudgetForecast.until(date, @project.id).first
+    @overall_costs[:forecast] = ProjectbudgetForecast.until(date, @project.id).latest
     @overall_costs[:individual] = costs_for_individualitems(@project, date)
     @overall_costs[:issues] = costs_for_all_issues(@project, date, salary_customfield)
     

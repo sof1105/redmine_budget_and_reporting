@@ -5,16 +5,21 @@ class ProjectbudgetForecast < ActiveRecord::Base
   validates_presence_of :planned_date
   validates_presence_of :budget
 
-  def self.until(month, project_id)
-    where("project_id = ? and planned_date <= ?", project_id, month.end_of_month).order("planned_date DESC")
+  def self.until(date, project_id)
+    where("project_id = ? and planned_date <= ?", project_id, date)
   end
   
-  def differenz(number_of_months)
-    actual_forecast = ProjectbudgetForecast.where(:project_id => self.project_id)
+  def self.delta(number_of_months, project_id)
+    actual_forecast = ProjectbudgetForecast.where(:project_id => project_id).latest
     months_ago = Date.today.months_ago number_of_months
-    old_forecast = ProjectbudgetForecast.until(months_ago, self.project_id)
+    months_ago = months_ago.end_of_month
+    old_forecast = ProjectbudgetForecast.until(months_ago, project_id).latest
     
-    return actual_forecast.first.budget - old_forecast.first.budget
+    if actual_forecast && old_forecast
+      return actual_forecast - old_forecast
+    else
+      return 0
+    end
   end
   
   def self.latest
