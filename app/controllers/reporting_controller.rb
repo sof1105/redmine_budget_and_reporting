@@ -20,8 +20,12 @@ class ReportingController < ApplicationController
       temp = []
       closed = nil
       forecast = nil
-      forecast = VersiondateForecast.until(date, version.id).first
-      closed = version.fixed_issues.order("closed_on DESC").first.closed_on if version.issues_count > 0 && version.open_issues_count == 0
+      forecast = VersiondateForecast.where(:version_id => version.id).latest
+      if version.issues_count == 0
+        closed = version.created_on
+      elsif version.issues_count > 0 && version.open_issues_count == 0
+        closed = version.fixed_issues.order("closed_on DESC").first.closed_on 
+      end
       temp.append(version)
       temp.append(forecast)
       temp.append(closed)
@@ -36,7 +40,7 @@ class ReportingController < ApplicationController
     @budget.append(budget_issue)
     @budget.append(budget_individual)
     @budget.append(PlannedBudget.latest_budget_for(@project.id))
-    @budget.append(ProjectbudgetForecast.until(date, @project.id).first)
+    @budget.append(ProjectbudgetForecast.until(date, @project.id).latest)
 
   end
   

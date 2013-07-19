@@ -19,6 +19,8 @@ style_currency = wb.styles.add_style :sz => 10, :b => false, :alignment => {:hor
                                      :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
 style_date = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center}, :num_fmt => Axlsx::NUM_FMT_YYYYMMDD,
                                  :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
+ style_date_delta = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center},
+                                 :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}                 
 
 wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :fit_to_height => 1, :fit_to_height => 1}) do |sheet|
   
@@ -60,33 +62,48 @@ wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :
     sheet.add_row([nil, nil, nil, nil, nil], :height => 14, :style => [style_empty_left, nil, nil, nil, style_empty_right])
     
     # add table heading
-    sheet.add_row([nil, "geplannt", "Prognose", "IST-Wert", "Delta"], :height => 14, :style => style_tableheading)
+    sheet.add_row([nil, "geplannt", "Prognose", "IST-Wert", "Delta (1 Mon.)"], :height => 14, :style => style_tableheading)
     
     # add budget information
     planned_budget = project.PlannedBudget.latest.try(:budget)
     budget_forecast = project.ProjectbudgetForecast.latest.try(:budget)
     
     salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
-    budget_issue = 0
+    actual_budget_issue = 0
     TimeEntry.where(:project_id => project.id).each do |entry|
-      budget_issue += controller.costs_for_TimeEntry(entry, salary_customfield)
+      actual_budget_issue += controller.costs_for_TimeEntry(entry, salary_customfield)
     end
-    budget_individual = IndividualItem.until(Date.today, project.id).sum(:costs)
-    delta = nil
+    actual_budget_individual = IndividualItem.until(Date.today, project.id).sum(:costs)
+    actual_budget = actual_budget_issue + actual_budget_individual
     
-    sheet.add_row(["Budget", planned_budget, budget_forecast, budget_issue+budget_individual, delta], :height => 14,
+    old_budget_issue = 0
+    TimeEntry.where("project_id = ? AND spent_on <= ?", project.id, Date.today.months_ago(1) ).each do |entry|
+      old_budget_issue += controller.costs_for_TimeEntry(entry, salary_customfield)
+    end
+    old_budget_individual = IndividualItem.until(Date.today.months_ago(1), project.id).sum(:costs)
+    old_budget = old_budget_issue + old_budget_individual
+    
+    delta = actual_budget - old_budget
+    
+    sheet.add_row(["Budget", planned_budget, budget_forecast, actual_budget, delta], :height => 14,
                     :style =>[style_table_left, style_currency, style_currency, style_currency, style_currency])
     
     # add information for each version
-    project.versions.reverse.each do |v|
+    versions = project.versions
+    versions.sort! {|a,b| a.name <=> b.name}
+    versions.each do |v|
         name = v.name
         planned_date = v.effective_date || "" # empty string, but not nil, so that version name doesn't overlow into next cell
         forecast_date = v.VersiondateForecast.latest.try(:forecast_date)
         closed_date = nil
-        closed_date = v.fixed_issues.order("closed_on DESC").first.closed_on if v.issues_count > 0 && v.open_issues_count == 0
-        delta = nil
+        if v.issues_count == 0
+          closed_date = v.created_on
+        elsif v.issues_count > 0 && v.open_issues_count == 0
+          closed_date = v.fixed_issues.order("closed_on DESC").first.closed_on 
+        end
+        delta = VersiondateForecast.delta(1, v.id).to_i
         sheet.add_row([name, planned_date, forecast_date, closed_date, delta], :height => 14,
-                        :style => [style_table_left, style_date, style_date, style_date, style_date])
+                        :style => [style_table_left, style_date, style_date, style_date, style_date_delta])
     end
     
     sheet.add_row([nil], :height => 14)

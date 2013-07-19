@@ -6,19 +6,21 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
   url 'http://example.com/path/to/plugin'
   author_url 'http://example.com/about'
   
-  
-  
-  # make sure UserCustomField for salary exists
-  if UserCustomField.where(:name => "Stundenlohn").empty?
-    UserCustomField.create({:type => "UserCustomField", :name => "Stundenlohn", :field_format => "float",
-                            :default_value => "50", :is_required => true, :editable => true, :visible => false})
-  end
-  
-  # make sure ProjectCustomField for comment exists
-  if ProjectCustomField.where(:name => "Bemerkung Projektreporting").empty?
-    ProjectCustomField.create({:type => "ProjectCustomField", :name => "Bemerkung Projektreporting", :field_format => "text",
-                               :visible => true, :editable => true})
-  end
+
+    # only create field if CustumField table already exists
+    if ActiveRecord::Base.connection.table_exists? 'custom_fields'   
+        # make sure UserCustomField for salary exists
+        if UserCustomField.where(:name => "Stundenlohn").empty?
+            UserCustomField.create({:type => "UserCustomField", :name => "Stundenlohn", :field_format => "float",
+        :default_value => "50", :is_required => true, :editable => true, :visible => false})
+        end
+
+        # make sure ProjectCustomField for comment exists
+        if ProjectCustomField.where(:name => "Bemerkung Projektreporting").empty?
+            ProjectCustomField.create({:type => "ProjectCustomField", :name => "Bemerkung Projektreporting", :field_format => "text",
+                                   :visible => true, :editable => true})
+        end
+    end
   
   project_module :reporting do
     permission :reporting, {:reporting => :index}, :public => true
@@ -43,13 +45,13 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
 		ActionDispatch::Callbacks.to_prepare do
 			# use require_dependency if you plan to utilize development mode
 			require 'patches/GanttchartPatch'
-      			require 'patches/ProjectInclude'
+            require 'patches/ProjectInclude'
 		end
 	else
 		Dispatcher.to_prepare BW_AssetHelpers::PLUGIN_NAME do
 			# use require_dependency if you plan to utilize development mode
 			require 'patches/GanttchartPatch'
-      			require 'patches/ProjectInclude'
+      		require 'patches/ProjectInclude'
 		end
 	end
   
