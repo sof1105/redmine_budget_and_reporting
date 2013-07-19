@@ -20,6 +20,11 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
             ProjectCustomField.create({:type => "ProjectCustomField", :name => "Bemerkung Projektreporting", :field_format => "text",
                                    :visible => true, :editable => true})
         end
+
+	if VersionCustomField.where(:name => "Abgeschlossen").empty?
+		VersionCustomField.create({:type => "VersionCustomField", :name => "Abgeschlossen", :field_format =>"date",
+			:is_required => false, :is_filter => true, :editable => true, :visible => true})
+	end
     end
   
   project_module :reporting do

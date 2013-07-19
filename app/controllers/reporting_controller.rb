@@ -9,6 +9,7 @@ class ReportingController < ApplicationController
     # show overview over actual project (depending on date)
     date = Date.today
     salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
+    version_customfield = VersionCustomField.where(:name =>"Abgeschlossen").first
 
     role = Role.where(:name => "Projektleiter").first
     unless role.nil?
@@ -21,11 +22,7 @@ class ReportingController < ApplicationController
       closed = nil
       forecast = nil
       forecast = VersiondateForecast.where(:version_id => version.id).latest
-      if version.issues_count == 0
-        closed = version.created_on
-      elsif version.issues_count > 0 && version.open_issues_count == 0
-        closed = version.fixed_issues.order("closed_on DESC").first.closed_on 
-      end
+      closed = version.custom_field_value(version_customfield.try(:id))
       temp.append(version)
       temp.append(forecast)
       temp.append(closed)

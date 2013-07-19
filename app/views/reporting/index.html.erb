@@ -75,7 +75,7 @@ function reload_dialog(url){
 <table class="forecast">
   <tr>
     <th>Meilenstein</th>
-    <th>geplannt</th>
+    <th>geplant</th>
     <th>Prognose</th>
     <th>Ist-Wert</th>
   </tr>
@@ -98,7 +98,13 @@ function reload_dialog(url){
           <span class="icon icon-move"></a>
         <% end %>
       </td>
-      <td><%= forecast[2].nil? ? "----------------" : I18n.l(forecast[2].to_date) %></td>
+      <td><%= forecast[2].nil? ? "----------------" : I18n.l(forecast[2].to_date) %>
+        <% if User.current.allowed_to?({:controller => "versions", :action => "edit"}, @project) %>
+          <%= link_to '<span class="icon icon-edit">'.html_safe, {:controller => "versions", :action => "edit", :id => forecast[0].id} %>
+        <% else %>
+          <%= link_to '<span class="icon icon-move">'.html_safe, {:controller => "versions", :action => "show", :id => forecast[0].id} %>
+        <% end %>
+      </td>
     </tr>
   <% end %>
 </table>
@@ -109,7 +115,7 @@ function reload_dialog(url){
 <table class="forecast">
   <tr>
     <th></th>
-    <th>geplannt</th>
+    <th>geplant</th>
     <th>Prognose</th>
     <th>Ist-Wert</th>
   </tr>
