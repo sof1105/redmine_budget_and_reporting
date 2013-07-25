@@ -96,7 +96,7 @@ wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :
         name = v.name
         planned_date = v.effective_date || "" # empty string, but not nil, so that version name doesn't overlow into next cell
         forecast_date = v.VersiondateForecast.latest.try(:forecast_date)
-	closed_date = v.custom_field_value(version_customfield.try(:id)).try(:to_date)
+		closed_date = v.custom_field_value(version_customfield.try(:id)).try(:to_date)
         delta = VersiondateForecast.delta(1, v.id).to_i
         sheet.add_row([name, planned_date, forecast_date, closed_date, delta], :height => 14,
                         :style => [style_table_left, style_date, style_date, style_date, style_date_delta])
