@@ -1,0 +1,11 @@
+<h2>Zwischensummen:</h2>
+
+<table>
+	<% @subtotals.each do |s| %>
+	<tr>
+		<td><%= I18n.l(s.upto) %></td>
+		<td><%= number_to_currency(s.amount) %></td>
+		<td><%= s.comment %></td>
+	</tr>
+	<% end %>
+</table>

@@ -5,7 +5,12 @@ scope "/projects/:project_id" do
   get "/budget" => "budget#index"
   get "/budget/individual_file" => "budget#choose_individual_file"
   post "/budget/upload" => "budget#parse_individual_file"
+  get "/budget/individual/:individual_id/delete" => "budget#delete_individual"
   get "/budget/individual/details" => "budget#show_individual_costs"
+  get "/budget/subtotal" => "intermediate_budget#index"
+  get "/budget/subtotal/new" => "intermediate_budget#new"
+  get "/budget/subtotal/delete/:subtotal_id" => "intermediate_budget#delete"
+  post "/budget/subtotal/edit/:subtotal_id" => "intermediate_budget#edit"
   
   get "/reporting" => "reporting#index"
   get "/reporting/export/all_projects" => "reporting#export_excel_all_projects"
@@ -25,4 +30,5 @@ scope "/projects/:project_id" do
   get "/plan/budget/plan" => "forecast#show_budget_plan"
   get "/plan/budget/:plan_id/delete" => "forecast#delete_budget_plan"
   post "/plan/budget/new" => "forecast#new_budget_plan"
+
 end

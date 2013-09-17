@@ -29,11 +29,22 @@ module BudgetCalculating
       salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
     end
     
-    all_entries = TimeEntry.where("project_id = ? AND spent_on <= ?", project.id, upto)
+    subtotal = Subtotal.latest(project)
     total_costs = 0
-    all_entries.each do |entry|
-      total_costs += costs_for_TimeEntry(entry, salary_customfield)
-    end
+    
+    if subtotal
+		all_entries = TimeEntry.where("project_id = ? AND spent_on <= ? AND spent_on > ?", project.id, upto, subtotal.upto)
+		all_entries.each do |entry|
+			total_costs += costs_for_TimeEntry(entry, salary_customfield)
+		end
+		total_costs = subtotal.amount + total_costs
+	else
+		all_entries = TimeEntry.where("project_id = ? AND spent_on <= ?", project.id, upto)
+		all_entries.each do |entry|
+			total_costs += costs_for_TimeEntry(entry, salary_customfield)
+		end
+	end
+	
     return total_costs
   end
 end

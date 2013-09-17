@@ -13,6 +13,16 @@
       );
     });
   });
+  
+  function update_after_delete(url){
+    $.get(url, function(data){
+	  $("#budget_floating").html(data);
+	  $("#budget_floating").dialog({
+		width: 1000,
+		modal: true
+	  });
+    });
+  };
 </script>
 
 <h2>Budget Report für <%= @project.name %></h2>

@@ -7,7 +7,12 @@
   <li><%= link_to "Excel Export (alle Projekte)", {:controller => "reporting", :action => "export_excel_all_projects"} %></li>
   <li><%= link_to "Excel Export (alle Projekte in denen ich Projektleiter bin)", {:controller => "reporting", 
             :action => "export_excel_own_projects"} %></li>
-  <li>Budget nach Personen</li>
+</ul>
+
+<h4>Zwischensummen fuer Personalkosten</h4>
+<ul>
+  <li><%= link_to "Neu", {:controller => "intermediate_budget", :action => "new" } %></li>
+  <li><%= link_to "Uebersicht", {:controller => "intermediate_budget", :action => "index" } %></li>
 </ul>
 
 <h4> Uploads </h4>

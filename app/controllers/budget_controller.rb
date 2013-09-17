@@ -46,6 +46,17 @@ class BudgetController < ApplicationController
     render :partial => "show_individual_costs"
   end
   
+  def delete_individual
+    if params[:individual_id] && IndividualItem.exists?(params[:individual_id])
+	  i = IndividualItem.find(params[:individual_id])
+	  if not i.destroy
+	    flash[:error] = "Konnte Eintrag nicht loeschen"
+	  end
+    end
+    @items = IndividualItem.where(:project_id => @project.id).order("booking_data ASC")
+    render :partial => "show_individual_costs"
+  end
+  
   # process a csv file with individual costs -------------
   def choose_individual_file
 

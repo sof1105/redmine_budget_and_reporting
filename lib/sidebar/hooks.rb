@@ -7,7 +7,8 @@ module Redmine_budget_and_reporting
       sidebar = ''
       
       # make sure sidebar is only displayed for Budget- and ReportingController
-      if controller && (controller.is_a?(BudgetController) || controller.is_a?(ReportingController))
+      if controller && (controller.is_a?(BudgetController) || controller.is_a?(ReportingController) || 
+						controller.is_a?(IntermediateBudgetController))
         sidebar << controller.send(:render_to_string, {
                 :partial => "/sidebar/menu"
             })
