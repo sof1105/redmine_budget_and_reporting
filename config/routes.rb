@@ -9,6 +9,8 @@ scope "/projects/:project_id" do
   get "/budget/individual/details" => "budget#show_individual_costs"
   get "/budget/subtotal" => "intermediate_budget#index"
   get "/budget/subtotal/new" => "intermediate_budget#new"
+  post "/budget/subtotal/create" => "intermediate_budget#create"
+  get "/budget/subtotal/new_all" => "intermediate_budget#new_all_projects"
   get "/budget/subtotal/delete/:subtotal_id" => "intermediate_budget#delete"
   post "/budget/subtotal/edit/:subtotal_id" => "intermediate_budget#edit"
   

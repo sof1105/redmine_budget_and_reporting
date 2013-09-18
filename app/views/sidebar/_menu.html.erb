@@ -11,14 +11,15 @@
 
 <h4>Zwischensummen fuer Personalkosten</h4>
 <ul>
-  <li><%= link_to "Neu", {:controller => "intermediate_budget", :action => "new" } %></li>
   <li><%= link_to "Uebersicht", {:controller => "intermediate_budget", :action => "index" } %></li>
+  <li><%= link_to "Neu (alle Projekte)", {:controller => "intermediate_budget", :action => "new_all_projects"} %></li>
+  <li><%= link_to "Neu (dieses Projekt)", {:controller => "intermediate_budget", :action => "new" } %></li>
 </ul>
 
 <h4> Uploads </h4>
 <ul>
   <% if User.current.allowed_to?({:controller => "reporting", :action => "choose_gan_file"}, @project) %>
-    <li><%= link_to "Neue Gan-Datei", {:controller => "reporting", :action => "choose_gan_file"} %></li>
+    <li><%= link_to "Neue Gantt-Datei", {:controller => "reporting", :action => "choose_gan_file"} %></li>
   <% end %>
   <% if User.current.allowed_to?({:controller => "budget", :action => "choose_individual_file"}, @project) %>
     <li><%= link_to "Neue Einzelkosten-Liste", {:controller => 'budget', :action => 'choose_individual_file'} %> </li>

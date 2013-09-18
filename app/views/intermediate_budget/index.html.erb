@@ -1,11 +1,23 @@
 <h2>Zwischensummen:</h2>
 
 <table>
-	<% @subtotals.each do |s| %>
 	<tr>
-		<td><%= I18n.l(s.upto) %></td>
-		<td><%= number_to_currency(s.amount) %></td>
-		<td><%= s.comment %></td>
+		<th>Datum</th>
+		<th>Summe</th>
+		<th>Kommentar</th>
+		<th></th>
+		<th></th>
 	</tr>
+	<% @subtotals.each do |s| %>
+		<%= form_tag({:controller => "intermediate_budget", :action => "edit", :subtotal_id => s.id}) do %>
+		<tr>
+			<td><%= I18n.l(s.upto) %></td>
+			<td><%= number_to_currency(@costs[s.id]) %></td>
+			<td><%= text_field_tag(:comment, s.comment) %></td>
+			<td><%= submit_tag "speichern" %></td>
+			<td><%= link_to "loeschen", {:controller => "intermediate_budget",
+										 :action => "delete", :subtotal_id => s.id } %></td>
+		</tr>
+		<% end %>
 	<% end %>
 </table>
