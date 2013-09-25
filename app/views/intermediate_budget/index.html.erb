@@ -14,8 +14,8 @@
 			<td><%= I18n.l(s.upto) %></td>
 			<td><%= number_to_currency(@costs[s.id]) %></td>
 			<td><%= text_field_tag(:comment, s.comment) %></td>
-			<td><%= submit_tag "speichern" %></td>
-			<td><%= link_to "loeschen", {:controller => "intermediate_budget",
+			<td><%= submit_tag "Änderungen speichern" %></td>
+			<td><%= link_to "löschen", {:controller => "intermediate_budget",
 										 :action => "delete", :subtotal_id => s.id } %></td>
 		</tr>
 		<% end %>

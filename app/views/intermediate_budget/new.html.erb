@@ -1,8 +1,19 @@
-<h2>Neue Zwischensumme fuer <%= @project.name %></h2>
+<h2>Neue Zwischensumme für <%= @project.name %></h2>
 
 <%= form_tag({:controller =>"intermediate_budget", :action => "create"}) do %>
-Datum: <%= @upto %><br>
-Summe: <%= number_to_currency(@costs) %><br>
-Kommentar: <%= text_field_tag(:comment, nil) %><br>
+<table>
+ <tr>
+   <td>Datum:</td>
+   <td><%= @upto %></td>
+ </tr>
+ <tr>
+   <td>Summe:</td>
+   <td><%= number_to_currency(@costs) %></td>
+ </tr>
+ <tr>
+   <td>Kommentar: </td>
+   <td><%= text_field_tag(:comment, nil) %></td>
+ </tr>
+</table>
 <%= submit_tag("Speichern") %>
 <% end %>
