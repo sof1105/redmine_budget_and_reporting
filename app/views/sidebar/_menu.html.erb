@@ -9,6 +9,7 @@
             :action => "export_excel_own_projects"} %></li>
 </ul>
 
+<% if User.current.allowed_to_globally(:upload_cost_file) %>
 <h4>Zwischensummen fuer Personalkosten</h4>
 <ul>
   <li><%= link_to "Übersicht", {:controller => "intermediate_budget", :action => "index" } %></li>
@@ -16,13 +17,14 @@
 										:data => {:confirm => "Sind Sie sicher?"} %></li>
   <li><%= link_to "Neu (dieses Projekt)", {:controller => "intermediate_budget", :action => "new" } %></li>
 </ul>
+<% end %>
 
 <h4> Uploads </h4>
 <ul>
   <% if User.current.allowed_to?({:controller => "reporting", :action => "choose_gan_file"}, @project) %>
     <li><%= link_to "Neue Gantt-Datei", {:controller => "reporting", :action => "choose_gan_file"} %></li>
   <% end %>
-  <% if User.current.allowed_to?({:controller => "budget", :action => "choose_individual_file"}, @project) %>
+  <% if User.current.allowed_to_globally(:upload_cost_file)>
     <li><%= link_to "Neue Einzelkosten-Liste", {:controller => 'budget', :action => 'choose_individual_file'} %> </li>
   <% end %>
 </ul>
