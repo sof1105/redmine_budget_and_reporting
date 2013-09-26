@@ -3,7 +3,7 @@ class IntermediateBudgetController < ApplicationController
   include BudgetCalculating
   
   before_filter :set_project
-  before_filter :authorize
+  before_filter :authorize_global
   
   def index
 	@subtotals = Subtotal.where(:project_id => @project.id)
