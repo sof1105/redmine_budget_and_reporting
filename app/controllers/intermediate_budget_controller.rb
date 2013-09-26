@@ -3,7 +3,7 @@ class IntermediateBudgetController < ApplicationController
   include BudgetCalculating
   
   before_filter :set_project
-  before_filter  {|c| c.authorize_global("budget", "choose_individual_file")}
+  before_filter :own_authorize
   
   def index
 	@subtotals = Subtotal.where(:project_id => @project.id)
@@ -117,4 +117,11 @@ class IntermediateBudgetController < ApplicationController
     
   end
   
+  def own_authorize
+    if User.current.allowed_globally?(:upload_cost_file, {})
+      return true
+    else
+      deny_access
+    end
+  end
 end
