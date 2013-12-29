@@ -3,48 +3,86 @@
   <div class="flash error"><%= @errors %></div>
 <% end %>
 
-<% if User.current.allowed_to?({:controller => "versions", :action => "update"}, @project) %>
-  <%= form_tag({},:id => :edit_version_form) do %>
+<% finished_id = VersionCustomField.where(:name => "Abgeschlossen").first.try(:id) %>
+
+<% if User.current.allowed_to?({:controller => "versions", :action => "update"}, @project) %>  
   <table>
     <tr>
       <td>geplanntes Abschlussdatum:</td>
-      <td><%=text_field_tag("version[effective_date]", I18n.l(@version.effective_date)) %></td>
+      <td><% tmp=@version.effective_date%> <%= text_field_tag("effective_date", tmp.nil? ? "" : I18n.l(@version.effective_date)) %></td>
     </tr>
     <tr>
       <td>tatsächliches Abschlussdatum:</td>
-      <td><% finished_id = VersionCustomField.where(:name => "Abgeschlossen").first.try(:id) %>
-	  <%= text_field_tag("version[custom_field_values][3]",
-	      I18n.l(@version.custom_field_value(finished_id).to_date)) %>
-      </td>
+      <td><% tmp=@version.custom_field_value(finished_id) %>
+	  <%= text_field_tag("finished_date", tmp.empty? ? "" : I18n.l(@version.custom_field_value(finished_id).to_date)) %> </td>
     </tr>
     <tr>
+      <%= form_tag({},:id => :edit_version_form) do %>
+      <%= hidden_field_tag("version[effective_date]", @version.effective_date.try(:strftime, "%Y-%m-%d")) %>
+      <%= hidden_field_tag("version[custom_field_values]["+finished_id.to_s+"]",
+	      @version.custom_field_value(finished_id)) %>
+      <%= token_tag nil %>
+      <%= hidden_field_tag("key", User.current.api_token.value) %>
       <td rowspan="2"><%= submit_tag("Speichern") %></td>
     </tr>
   </table>
-  <% end %>
-  
+  <% end %>  
+
   <script>
 
-    $("#version_effective_date").datepicker({
+    $("#effective_date").datepicker({
       duration: 0,
-      dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
+      dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>",
+      altField: "#version_effective_date",
+      altFormat: "yy-mm-dd"
     });
-    <%= finished_id = VersionCustomField.where(:name => "Abgeschlossen").first.try(:id) %>
-    $("#version_custom_field_values_<%= finished_id.to_s %>").datepicker({
+    $("#finished_date").datepicker({
       duration: 0,
-      dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
+      dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>",
+      altField: "#version_custom_field_values_<%= finished_id %>",
+      altFormat: "yy-mm-dd"
     });
     $("#edit_version_form").submit(function(event){
+      // prevent standard submit
       event.preventDefault();
-      $.ajax({url : "<%= url_for({:controller => "versions", :action => "update", :id => @version.id}) %>",
+
+      // check if fields are empty, and set hidden fields accordingly
+      if ($.trim($("#effective_date").val()) === ""){$("#version_effective_date").val("");}
+      if ($.trim($("#finished_date").val()) === ""){$("#version_custom_field_values_<%= finished_id %>").val("");}
+      
+      // send ajax put request
+      $.ajax({url : "<%= url_for({:controller => "versions", :action => "update", :id => @version.id}) %>.json",
               type : "PUT",
               data : $("#edit_version_form").serialize(),
-              error: function(data,)
-              success : function(data){
-                           $("#floating").html(data);
-                         }
+              timeout: 8000,
+              statusCode:
+                {
+                   422: function(xhr, data, text){
+                          errors = $.parseJSON(xhr.responseText).errors.join("<br>");
+                          // harcoding sucks, but easiest way...
+                          errors = errors.replace("Datum is kein gültiges Datum", "geplanntes Abschlussdatum hat falsches Format");
+                          errors = errors.replace("Abgeschlossen is kein gültiges Datum","tatsächliches Abschlussdatum hat falsches Format");
+                          $.get("<%= url_for({:controller => 'forecast', :action => 'show_versiondate_forecast',
+                                              :version_id =>@version.id, :project_id => @project.id}) %>",
+                                function(data){
+                                  $("#floating").html("<div class='flash error'>"+errors+"</div>"+data);
+                                }
+                          );
+                        },
+                   200: function(xhr, data, text){
+                          $.get("<%= url_for({:controller => 'forecast', :action => 'show_versiondate_forecast',
+                                              :version_id =>@version.id, :project_id => @project.id}) %>",
+                                function(data){
+                                  $("#floating").html("<div class='flash notice'>Datum aktualisiert</div>"+data);
+                                }
+                          );
+                        }
+                },
+              error: function(xhr, status, text){
+                       $("#floating").html("Es ist ein Netzwerkfehler aufgetreten: "+status+" "+text);
+                     }
               });
-    });
+  });
   </script>
 
 <% else %>
@@ -55,7 +93,7 @@
     </tr>
     <tr>
       <td>tatsächliches Abschlussdatum:</td>
-      <td><%= I18n.l(@version.custom_field_value(VersionCustomField.where(:name => "Abgeschlossen").first.try(:id)).to_date)%></td>
+      <td><%= I18n.l(@version.custom_field_value(finished_id).to_date) %></td>
     </tr>
   </table>
 <% end %>
