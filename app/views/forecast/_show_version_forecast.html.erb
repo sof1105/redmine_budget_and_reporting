@@ -3,10 +3,66 @@
   <div class="flash error"><%= @errors %></div>
 <% end %>
 
-<h4>Übersicht</h4>
-<% if @forecasts.nil? || (@forecasts && @forecasts.empty?) %>
-  <h3>Bisher keine Prognosen erstellt</h3>
+<% if User.current.allowed_to?({:controller => "versions", :action => "update"}, @project) %>
+  <%= form_tag({},:id => :edit_version_form) do %>
+  <table>
+    <tr>
+      <td>geplanntes Abschlussdatum:</td>
+      <td><%=text_field_tag("version[effective_date]", I18n.l(@version.effective_date)) %></td>
+    </tr>
+    <tr>
+      <td>tatsächliches Abschlussdatum:</td>
+      <td><% finished_id = VersionCustomField.where(:name => "Abgeschlossen").first.try(:id) %>
+	  <%= text_field_tag("version[custom_field_values][3]",
+	      I18n.l(@version.custom_field_value(finished_id).to_date)) %>
+      </td>
+    </tr>
+    <tr>
+      <td rowspan="2"><%= submit_tag("Speichern") %></td>
+    </tr>
+  </table>
+  <% end %>
+  
+  <script>
+
+    $("#version_effective_date").datepicker({
+      duration: 0,
+      dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
+    });
+    <%= finished_id = VersionCustomField.where(:name => "Abgeschlossen").first.try(:id) %>
+    $("#version_custom_field_values_<%= finished_id.to_s %>").datepicker({
+      duration: 0,
+      dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
+    });
+    $("#edit_version_form").submit(function(event){
+      event.preventDefault();
+      $.ajax({url : "<%= url_for({:controller => "versions", :action => "update", :id => @version.id}) %>",
+              type : "PUT",
+              data : $("#edit_version_form").serialize(),
+              error: function(data,)
+              success : function(data){
+                           $("#floating").html(data);
+                         }
+              });
+    });
+  </script>
+
 <% else %>
+  <table>
+    <tr>
+      <td>geplanntes Abschlussdatum:</td>
+      <td><%= I18n.l(@version.effective_date) %></td>
+    </tr>
+    <tr>
+      <td>tatsächliches Abschlussdatum:</td>
+      <td><%= I18n.l(@version.custom_field_value(VersionCustomField.where(:name => "Abgeschlossen").first.try(:id)).to_date)%></td>
+    </tr>
+  </table>
+<% end %>
+ 
+
+  Bisherige Prognosen:
+  
   <table class="forecast small">
     <tr>
       <th>Prognose</th>
@@ -25,54 +81,41 @@
       </td>
     </tr>
   <% end %>
-  </table>
-<% end %>
-<br>
-
-<%# add new forecast if user is allowed_to %>
-<% if User.current.allowed_to?({:controller => "forecast", :action => "new_versiondate_forecast"}, @project) %>
-  <h4> Neue Prognose anlegen</h4>
-  <%= form_tag({}, :id =>"new_forecast_form") do %>
-    <table>
-      <tr>
-        <td><%=label_tag(:forecast_date, "Prognose: ") %></td>
+  
+  <%# add new forecast if user is allowed_to %>
+  <% if User.current.allowed_to?({:controller => "forecast", :action => "new_versiondate_forecast"}, @project) %>
+    <tr>
+      <%= form_tag({}, :id =>"new_forecast_form") do %>
         <td><%= text_field_tag(:forecast_date, nil, :size => 10) %></td>
-      </tr>
-      <tr>
-        <td><%=label_tag(:planned_date, "Geplant am: ")%></td>
         <td><%= text_field_tag(:planned_date, nil, :size => 10) %></td>
-      </tr>
-      <tr style="text-align:right">
-        <td colspan="2"><%= submit_tag("Prognose speichern")%></td>
-      </tr>
+        <td><a href="#" onClick="add_forecast()"><span class="icon icon-add"/>hinzufügen</a></td>
+      <% end %>
+    </tr>
     </table>
-  <% end %>
 
-  <script type="text/javascript">
-    //transform inputs into datepicker
-    $("#forecast_date").datepicker({
-      buttonImage: "<%= path_to_image("/images/calendar.png") %>",
-      duration: 0,
-      showOn: 'both',
-      dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
-    });
-    $("#planned_date").datepicker({
-      buttonImage: "<%= path_to_image("/images/calendar.png") %>",
-      duration: 0,
-      showOn: 'both',
-      dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
-    });
-    $("#planned_date").datepicker("setDate", "<%= I18n.l(Date.today) %>");
+    <script type="text/javascript">
+      //transform inputs into datepicker
+      $("#forecast_date").datepicker({
+        duration: 0,
+        dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
+      });
+      $("#planned_date").datepicker({
+        duration: 0,
+        dateFormat: "<%= I18n.t("date.formats.default").sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>"
+      });
+      $("#planned_date").datepicker("setDate", "<%= I18n.l(Date.today) %>");
     
-    // make form post an ajax call
-    $("#new_forecast_form").submit(function(event){
-      event.preventDefault();
-      $.post("<%= url_for({:controller => "forecast", :action => "new_versiondate_forecast",
+      // add new forecast via ajax post
+      function add_forecast(){
+        $.post("<%= url_for({:controller => "forecast", :action => "new_versiondate_forecast",
                                   :version_id => @version.id, :project_id => @project.id}) %>",
               $("#new_forecast_form").serialize(),
               function(data){
                 $("#floating").html(data);
               });
-    });
-  </script>
-<% end %>
+      };
+    </script>
+
+  <% else %>
+    </table>
+  <% end %>

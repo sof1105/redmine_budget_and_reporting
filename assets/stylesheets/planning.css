@@ -1,3 +1,10 @@
+#forecast_date{
+    border: 1px solid;
+}
+#planned_date{
+    border: 1px solid;
+}
+
 .index_heading{
   font-size: 12px;
   font-weight: bold;

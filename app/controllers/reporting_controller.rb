@@ -9,14 +9,23 @@ class ReportingController < ApplicationController
     # show overview over actual project (depending on date)
     date = Date.today
     salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
-    version_customfield = VersionCustomField.where(:name =>"Abgeschlossen").first
-
+    version_customfield = VersionCustomField.where(:name => "Abgeschlossen").first
     role = Role.where(:name => "Projektleiter").first
-    unless role.nil?
-      @project_leader = @project.users_by_role[role]
-    end
     
-    @version_forecasts = []
+
+    # get the project informations
+    @project_information = {}
+    typ = @project.custom_field_value(ProjectCustomField.where(:name => "Projekttyp").first.try(:id))
+    export = @project.custom_field_value(ProjectCustomField.where(:name => "Wird exportiert").first.try(:id))
+    remark = @project.custom_field_value(ProjectCustomField.where(:name => "Bemerkung Projektreporting").first.try(:id))
+    @project_information[:typ] = typ
+    @project_information[:export] = export
+    @project_information[:remark] = remark
+    @project_information[:projectleader] = @project.users_by_role[role] || []
+    
+
+    # get the informations of all versions of the project
+    @version_informations = []
     @project.versions.each do |version|
       temp = []
       closed = nil
@@ -26,10 +35,12 @@ class ReportingController < ApplicationController
       temp.append(version)
       temp.append(forecast)
       temp.append(closed)
-      @version_forecasts.append(temp)
+      @version_informations.append(temp)
     end
-    @version_forecasts.sort! {|a,b| a[0].name <=> b[0].name}
-        
+    @version_informations.sort! {|a,b| a[0].name <=> b[0].name}
+    
+
+    # get the budget informations of the project
     @budget = []
     budget_issue = costs_for_all_issues(@project, date, salary_customfield)
     budget_individual = costs_for_individualitems(@project, date)

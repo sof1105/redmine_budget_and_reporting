@@ -2,13 +2,13 @@
 
 <script type="text/javascript">
 
-function open_versiondate_dialog(url){
+function open_versiondate_dialog(url, name){
    $.get(url, function(data){
       $("#floating").html(data);
       $("#floating").dialog({
         modal: true,
-        title: "Meilenstein Plannung",
-        width: 500,
+        title: name,
+        width: 550,
         open: function(event, ui){
                 // remove focus on first elemente and hide already opend datepicker div
                 $(".hasDatepicker").datepicker("hide");
@@ -29,7 +29,7 @@ function open_budget_dialog(url){
       $("#floating").dialog({
         modal: true,
         title: "Budget Plannung",
-        width: 500,
+        width: 550,
         open: function(event, ui){
                 // remove focus on first elemente and hide already opend datepicker div
                 $(".hasDatepicker").datepicker("hide");
@@ -59,13 +59,16 @@ function reload_dialog(url){
     <td><%= @project.name %></td>
   </tr>
   <tr>
+    <td>Projekttyp:</td>
+    <td><%= @project_information[:typ] %></td>
+  </tr>
+  <tr>
     <td>Projektleiter:</td>
-    <td><%= @project_leader ? @project_leader.map {|p| p.name }.to_sentence(:last_word_connector => ", " , :two_words_connector => ", ") : "" %></td>
+    <td><%= @project_information[:projectleader].map {|p| p.name }.to_sentence(:last_word_connector => ", " , :two_words_connector => ", ") %></td>
   </tr>
   <tr>
     <td>Bemerkung:</td>
-    <% project_customfield = ProjectCustomField.where(:name => "Bemerkung Projektreporting").first %>
-    <td><%= @project.custom_field_value(project_customfield.id) %></td>
+    <td><%= @project_information[:remark] %></td>
   </tr>
 </table>
 <br>
@@ -77,34 +80,23 @@ function reload_dialog(url){
     <th>Meilenstein</th>
     <th>geplant</th>
     <th>Prognose</th>
-    <th>Ist-Wert</th>
+    <th>Abgeschlossen</th>
+    <th></th>
   </tr>
-  <% @version_forecasts.each do |forecast| %>
+  <% @version_informations.each do |forecast| %>
     <tr>
       <td><%= link_to forecast[0].name, {:controller => "versions", :action => "show", :id => forecast[0].id} %></td>
-      <td><%= forecast[0].effective_date.nil? ? "----------------" : I18n.l(forecast[0].effective_date) %>
-        <% if User.current.allowed_to?({:controller => "versions", :action => "edit"}, @project) %>
-          <%= link_to '<span class="icon icon-edit">'.html_safe, {:controller => "versions", :action => "edit", :id => forecast[0].id} %>
-        <% else %>
-          <%= link_to '<span class="icon icon-move">'.html_safe, {:controller => "versions", :action => "show", :id => forecast[0].id} %>
-        <% end %>
-      </td>
-      <td><%= forecast[1].nil? ? "----------------" : I18n.l(forecast[1].forecast_date) %>
-        <a href="#" onClick="open_versiondate_dialog('<%=url_for({:controller => "forecast", :action => "show_versiondate_forecast",
-                                                                  :version_id => forecast[0].id.to_s, :project_id => @project.id})%>')">
+      <td><%= forecast[0].effective_date.nil? ? "----------------" : I18n.l(forecast[0].effective_date) %></td>
+      <td><%= forecast[1].nil? ? "----------------" : I18n.l(forecast[1].forecast_date) %></td>
+      <td><%= forecast[2].nil? || forecast[2].empty? ? "----------------" : I18n.l(forecast[2].to_date) %></td>
+      <td><a href="#" onClick="open_versiondate_dialog('<%=url_for({:controller => "forecast", :action => "show_versiondate_forecast",
+                                                                  :version_id => forecast[0].id.to_s, :project_id => @project.id})%>',
+								  '<%= forecast[0].name %>')">
         <% if User.current.allowed_to?({:controller => "forecast", :action => "new_versiondate_forecast"}, @project) %>
-          <span class="icon icon-edit"></a>
+          <span class="icon icon-edit"> Bearbeiten</a>
         <% else %>
-          <span class="icon icon-move"></a>
-        <% end %>
-      </td>
-      <td><%= forecast[2].nil? || forecast[2].empty? ? "----------------" : I18n.l(forecast[2].to_date) %>
-        <% if User.current.allowed_to?({:controller => "versions", :action => "edit"}, @project) %>
-          <%= link_to '<span class="icon icon-edit">'.html_safe, {:controller => "versions", :action => "edit", :id => forecast[0].id} %>
-        <% else %>
-          <%= link_to '<span class="icon icon-move">'.html_safe, {:controller => "versions", :action => "show", :id => forecast[0].id} %>
-        <% end %>
-      </td>
+          <span class="icon icon-move"> Ansehen</a>
+        <% end %></td>
     </tr>
   <% end %>
 </table>
