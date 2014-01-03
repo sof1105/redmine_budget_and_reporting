@@ -9,12 +9,12 @@
   <table>
     <tr>
       <td>geplanntes Abschlussdatum:</td>
-      <td><% tmp=@version.effective_date%> <%= text_field_tag("effective_date", tmp.nil? ? "" : I18n.l(@version.effective_date)) %></td>
+      <td><% tmp=@version.effective_date%> <%= text_field_tag("effective_date", tmp.nil? ? "" : I18n.l(@version.effective_date), :size => 10) %></td>
     </tr>
     <tr>
       <td>tatsächliches Abschlussdatum:</td>
       <td><% tmp=@version.custom_field_value(finished_id) %>
-	  <%= text_field_tag("finished_date", tmp.empty? ? "" : I18n.l(@version.custom_field_value(finished_id).to_date)) %> </td>
+	  <%= text_field_tag("finished_date", tmp.empty? ? "" : I18n.l(@version.custom_field_value(finished_id).to_date), :size => 10) %> </td>
     </tr>
     <tr>
       <%= form_tag({},:id => :edit_version_form) do %>

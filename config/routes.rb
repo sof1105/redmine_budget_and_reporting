@@ -15,6 +15,7 @@ scope "/projects/:project_id" do
   post "/budget/subtotal/edit/:subtotal_id" => "intermediate_budget#edit"
   
   get "/reporting" => "reporting#index"
+  get "/reporting/export" => "reporting#choose_export"
   get "/reporting/export/all_projects" => "reporting#export_excel_all_projects"
   get "/reporting/export/single_project" => "reporting#export_excel_single_project"
   get "/reporting/export/own_projects" => "reporting#export_excel_own_projects"

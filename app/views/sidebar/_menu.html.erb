@@ -3,14 +3,11 @@
 <ul>
   <li><%= link_to "Plannungsübersicht", {:controller => "reporting", :action => "index"} %></li>
   <li><%= link_to "Budgetübersicht",{:controller => "budget", :action => "index"} %></li>
-  <li><%= link_to "Excel Export (für dieses Projekt)", {:controller => "reporting", :action => "export_excel_single_project"} %></li>
-  <li><%= link_to "Excel Export (alle Projekte)", {:controller => "reporting", :action => "export_excel_all_projects"} %></li>
-  <li><%= link_to "Excel Export (alle Projekte in denen ich Projektleiter bin)", {:controller => "reporting", 
-            :action => "export_excel_own_projects"} %></li>
+  <li><%= link_to "Excel Export", {:controller => "reporting", :action => "choose_export"} %></li>
 </ul>
 
 <% if User.current.allowed_to_globally?(:upload_cost_file, {}) %>
-<h4>Zwischensummen fuer Personalkosten</h4>
+<h4>Zwischensummen für Personalkosten</h4>
 <ul>
   <li><%= link_to "Übersicht", {:controller => "intermediate_budget", :action => "index" } %></li>
   <li><%= link_to "Neu (alle Projekte)", {:controller => "intermediate_budget", :action => "new_all_projects"},

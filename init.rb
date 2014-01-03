@@ -13,7 +13,7 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
         # make sure UserCustomField for salary exists
         if UserCustomField.where(:name => "Stundenlohn").empty?
             UserCustomField.create({:type => "UserCustomField", :name => "Stundenlohn", :field_format => "float",
-                                    :default_value => "50", :is_required => true, :editable => true, :visible => false})
+                                    :default_value => "50", :is_required => true, :editable => false, :visible => false})
         end
 
         # add date field for finished projects

@@ -1,0 +1,30 @@
+<h4>Berichtsauswahl</h4>
+
+<%=params %><br>
+<%= @project_list %>
+<br>
+
+<script>
+  function toggle_all_from_typ(input){
+    //get input typ
+    //get input status
+    $("input[name^="+typ+"]").attr("checked", status);
+  }
+</script>
+
+<%= form_tag({:controller => "reporting", :action => "choose_export"}, :method => :get) do %>
+<% @project_list.each do |typ, projects| %>
+<div class="report_container">
+  <div class="header">
+    <%= check_box_tag typ.to_s %><%= label_tag typ.to_s, typ.to_s %>
+  </div>
+  <% projects.each do |p| %>
+  <div class="entry">
+    <%= check_box_tag "export["+p.id.to_s+"]" %><%= label_tag "entry["+p.id.to_s+"]", p.name %>
+  </div>
+  <% end %>
+</div>
+<% end %>
+<br>
+<input type="submit" value="Exportieren">
+<% end %>

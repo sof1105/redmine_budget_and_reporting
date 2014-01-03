@@ -51,6 +51,28 @@ class ReportingController < ApplicationController
     @budget.append(ProjectbudgetForecast.until(date, @project.id).latest)
 
   end
+
+  def choose_export
+    typ_id = ProjectCustomField.where(:name => "Projekttyp").first.try(:id)
+    export_id = ProjectCustomField.where(:name => "Wird exportiert").first.try(:id)
+    project_leader = Role.where(:name => "Projektleiter").first
+    @project_list = {}
+
+    # all projects who should be exported
+    projects = Project.all.select do |p|
+      p.custom_field_value(export_id) == "1" &&
+      p.module_enabled?(:reporting)
+    end
+    
+    # all projects sorted by typ
+    ProjectCustomField.find(typ_id).possible_values.each do |t|
+      @project_list[t]=projects.select{|p| p.custom_field_value(typ_id) == t}
+    end
+
+    # all projects by current user
+    @project_list["own_projects"] = User.current.projects_by_role[project_leader]
+
+  end
   
   def export_excel_all_projects
     @projects = Project.all.reject {|p| p.module_enabled?(:reporting).nil? || !p.active? }
