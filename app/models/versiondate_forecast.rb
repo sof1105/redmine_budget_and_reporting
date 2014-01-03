@@ -9,6 +9,10 @@ class VersiondateForecast < ActiveRecord::Base
   def self.until(date, version_id)
     where("version_id = ? AND planned_date <= ?", version_id, date)
   end
+
+  def self.until_date(date)
+    where("planned_date <= ?", date)
+  end
   
   def self.delta(number_of_months, version_id)
     actual_forecast = VersiondateForecast.where(:version_id => version_id).latest

@@ -57,6 +57,7 @@ class ReportingController < ApplicationController
     export_id = ProjectCustomField.where(:name => "Wird exportiert").first.try(:id)
     project_leader = Role.where(:name => "Projektleiter").first
     @project_list = {}
+    @special_list = {}
 
     # all projects who should be exported
     projects = Project.all.select do |p|
@@ -70,10 +71,46 @@ class ReportingController < ApplicationController
     end
 
     # all projects by current user
-    @project_list["own_projects"] = User.current.projects_by_role[project_leader]
+    @special_list["own_projects"] = User.current.projects_by_role[project_leader].map{|p| p.id}.join("','")
+    
+    # all projects which are not closed
+    @special_list["open_projects"] = projects.select{|p| p.status == 1}.map{|p| p.id}.join("','")
 
   end
+
+  def export_excel_variable_projects
+    project_ids = params[:export] || {}
+    project_ids =project_ids.select{|k,v| v=="1"}.keys
+    @projects = Project.where(:id => project_ids)
+    @projectleader_role = Role.where(:name => "Projektleiter").first
+    @upto = valid_date(params[:upto]) || Date.today
+
+    file = render_to_string :xlsx => "all_projects"#, :filename => 'Projektreporting_'+@upto.to_s+'.xlsx', :disposition => 'attachment'
+    send_data file, :filename => "Projektreporting_"+@upto.to_s+".xlsx", :disposition => "attachment"
+  end
   
+  def valid_date(date_string)
+    # uses date string with following format:
+    #     "2012-10-25"
+    # and returns Date object of nil depending if format is valid
+    
+    if date_string.blank?
+      return nil
+    end
+    
+    if date_string && date_string.split("-").first.length != 4
+      return nil
+    end
+    
+    begin
+      return date = Date.strptime(date_string, "%Y-%m-%d")
+    rescue
+      return nil
+    end
+  end
+
+
+  ## isnt used anymore -----------------------------------------------------------------------------------
   def export_excel_all_projects
     @projects = Project.all.reject {|p| p.module_enabled?(:reporting).nil? || !p.active? }
     @projectleader_role = Role.where(:name => "Projektleiter").first

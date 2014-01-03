@@ -9,6 +9,10 @@ class ProjectbudgetForecast < ActiveRecord::Base
     where("project_id = ? and planned_date <= ?", project_id, date)
   end
   
+  def self.until_date(date)
+    where("planned_date <= ?", date)
+  end
+  
   def self.delta(number_of_months, project_id)
     actual_forecast = ProjectbudgetForecast.where(:project_id => project_id).latest
     months_ago = Date.today.months_ago number_of_months

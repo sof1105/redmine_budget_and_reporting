@@ -1,0 +1,19 @@
+.report_container {
+    margin-left: 5px;
+}
+
+.report_container .header{
+    font-weight: bold;
+    margin-bottom: 8px;
+    margin-top: 20px;
+    padding-left: 0px;
+    padding-bottom: 2px;
+    border-bottom: 1px dotted;
+    font-size: 1.1em;
+    font-style: italic;
+}
+
+.report_container .entry{
+    font-weight: normal;
+    margin-left: 15px;
+}

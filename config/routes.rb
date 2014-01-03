@@ -16,6 +16,7 @@ scope "/projects/:project_id" do
   
   get "/reporting" => "reporting#index"
   get "/reporting/export" => "reporting#choose_export"
+  get "/reporting/export/variable" => "reporting#export_excel_variable_projects"
   get "/reporting/export/all_projects" => "reporting#export_excel_all_projects"
   get "/reporting/export/single_project" => "reporting#export_excel_single_project"
   get "/reporting/export/own_projects" => "reporting#export_excel_own_projects"

@@ -9,6 +9,10 @@ class PlannedBudget < ActiveRecord::Base
   def self.latest_budget_for(project_id)
     where(:project_id => project_id).order("created_on DESC").first
   end
+
+  def self.until_date(date)
+    where("created_on <= ?", date) 
+  end
   
   def self.latest
     order("created_on DESC").first

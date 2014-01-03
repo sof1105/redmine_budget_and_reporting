@@ -1,30 +1,67 @@
-<h4>Berichtsauswahl</h4>
+<%= stylesheet_link_tag "export", :plugin => "redmine_budget_and_reporting" %>
 
-<%=params %><br>
-<%= @project_list %>
-<br>
+<h2>Berichtauswahl</h2>
 
 <script>
+  $(document).ready(function(){
+    $("#upto_show").datepicker({
+        dateFormat: "<%= I18n.t('date.formats.default').sub('%d', 'dd').sub('%m', 'mm').sub('%Y', 'yy') %>",
+        altField : "#upto",
+        altFormat: "yy-mm-dd"
+      });
+  });
+
   function toggle_all_from_typ(input){
-    //get input typ
-    //get input status
-    $("input[name^="+typ+"]").attr("checked", status);
+    var status = input.prop("checked");
+    var typ = input.prop("name").replace("typ_","");
+    $("input[project_typ^="+typ+"]").attr("checked", status);
   }
+  function toggle_all_from_list(input, list){
+    var status = input.prop("checked");
+    $(list).each(function(index, id){
+      $("#export_"+id).attr("checked", status);
+    });
+  }
+  function uncheck_typ_if_unchecked(input){
+    var typ = input.attr("project_typ");
+    if ((input.prop("checked") === false) && ($("#typ_"+typ).prop("checked") === true)){
+      $("#typ_"+typ).attr("checked", false);
+    }
+  }
+
+  
 </script>
 
-<%= form_tag({:controller => "reporting", :action => "choose_export"}, :method => :get) do %>
-<% @project_list.each do |typ, projects| %>
-<div class="report_container">
-  <div class="header">
-    <%= check_box_tag typ.to_s %><%= label_tag typ.to_s, typ.to_s %>
-  </div>
-  <% projects.each do |p| %>
-  <div class="entry">
-    <%= check_box_tag "export["+p.id.to_s+"]" %><%= label_tag "entry["+p.id.to_s+"]", p.name %>
-  </div>
+<%= form_tag({:controller => "reporting", :action => "export_excel_variable_projects"}, :id => "export_form", :method => :get) do %>
+  <% @project_list.each do |typ, projects| %>
+  <div class="report_container">
+    <div class="header">
+      <%= check_box_tag "typ_"+typ.to_s, 1, false,:onchange => "toggle_all_from_typ($(this))" %><%= label_tag "typ_"+typ.to_s, typ.to_s %>
+    </div>
+    <% projects.each do |p| %>
+      <div class="entry">
+        <%= check_box_tag "export["+p.id.to_s+"]", 1, false, :project_typ => typ.to_s, :onchange => "uncheck_typ_if_unchecked($(this))" %>
+	<%= label_tag "export_"+p.id.to_s, p.name %>
+      </div>
+    <% end %>
+    </div>
   <% end %>
+<br><br>
+<h4>Weitere Filter</h4>
+<div class="report_container">
+  <%= check_box_tag "own_projects", 1, false, :onchange => ("toggle_all_from_list($(this), ['"+@special_list["own_projects"]+"'])").html_safe %>
+  <%= label_tag "own_projects", "Eigene Projekte" %>
 </div>
-<% end %>
+<div class="report_container">
+  <%= check_box_tag "open_projects", 1, false, :onchange => ("toggle_all_from_list($(this), ['"+@special_list["open_projects"]+"'])").html_safe %>
+  <%= label_tag "open_projects", "Offene Projekte" %>
+</div>
+<br>
+<div class="report_container">
+  <%= label_tag "upto_show", "Bericht bis Datum: ", :style => "margin-right: 10px;" %>
+  <%= text_field_tag "upto_show", I18n.l(Date.today), :size => 10 %>
+  <%= hidden_field_tag "upto", I18n.l(Date.today) %>
+</div>
 <br>
 <input type="submit" value="Exportieren">
 <% end %>

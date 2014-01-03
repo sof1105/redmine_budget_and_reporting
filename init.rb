@@ -12,14 +12,14 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
         
         # make sure UserCustomField for salary exists
         if UserCustomField.where(:name => "Stundenlohn").empty?
-            UserCustomField.create({:type => "UserCustomField", :name => "Stundenlohn", :field_format => "float",
+          UserCustomField.create({:type => "UserCustomField", :name => "Stundenlohn", :field_format => "float",
                                     :default_value => "50", :is_required => true, :editable => false, :visible => false})
         end
 
         # add date field for finished projects
         if VersionCustomField.where(:name => "Abgeschlossen").empty?
-		VersionCustomField.create({:type => "VersionCustomField", :name => "Abgeschlossen", :field_format =>"date",
-			:is_required => false, :is_filter => true, :editable => true, :visible => true})
+          VersionCustomField.create({:type => "VersionCustomField", :name => "Abgeschlossen", :field_format =>"date",
+			             :is_required => false, :is_filter => true, :editable => true, :visible => true})
 	end
 
         # add Projectcategory list
@@ -37,8 +37,8 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
 
         # make sure ProjectCustomField for comment exists
         if ProjectCustomField.where(:name => "Bemerkung Projektreporting").empty?
-            ProjectCustomField.create({:type => "ProjectCustomField", :name => "Bemerkung Projektreporting", :field_format => "text",
-                                   :visible => true, :editable => true})
+          ProjectCustomField.create({:type => "ProjectCustomField", :name => "Bemerkung Projektreporting", :field_format => "text",
+                                     :visible => true, :editable => true})
         end
 
     end
@@ -54,7 +54,7 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
   end
   
   menu :project_menu, :reporting, {:controller => 'reporting', :action => 'index'},
-    :caption => 'Reporting', :param => :project_id
+       :caption => 'Reporting', :param => :project_id
   
   require_dependency 'gantchart_spenthours/hooks'
   require_dependency 'sidebar/hooks'
