@@ -65,8 +65,23 @@ class BudgetController < ApplicationController
       end
     end
     @individual_costs_all_other = items.select{|p| not type_list.include?(p.cost_type.to_i)}.sum{|p| p.costs}
+    
+    # render page or generate pdf
+    if params[:pdf]=="1"
+      send_data render_pdf(), :filename => "Budgetbericht.pdf", :disposition => "attachment"
+      return
+    end
+
   end
   
+
+  def render_pdf
+    pdf=Prawn::Document.new
+    pdf.text "Hello World"
+    return pdf.render
+  end
+
+
   def show_individual_costs
     @items = IndividualItem.where(:project_id => @project.id).order("booking_date ASC")
     render :partial => "show_individual_costs"

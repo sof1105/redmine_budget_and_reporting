@@ -57,24 +57,28 @@
 <div class="budget_heading">Personalkosten</div>
 
 <% if not @costs_per_issue.empty? %>
-  <div class="budget_container">  
-    <% @costs_per_issue.each do |version, issue_list| %>
-      <div class="budget_version_container">
-        <div class="budget_container_heading"> <%= version.nil?  ? " Ohne Meilenstein" : version.name%></div>      
-        <% issue_list.each do |issue, total_costs| %>
-          <div class="budget_issue_container">
-            <div class="budget_issue_name" style="<%="text-decoration:line-through" if issue.closed? %>" >
-              <%= link_to(issue.subject.truncate(50), {:controller=> "timelog", :action => "index", 
-                                                       :issue_id => issue.id}) %>
-            </div>
-            <div class="budget_issue_progress"><%= line_for_issue_hours_progress(issue) %></div>
-            <div class="budget_issue_hours"><%= (issue.spent_hours).round(2) %> h </div>
-            <div class="budget_issue_costs"><%= number_to_currency(total_costs, :delimiter => ".") %> </div>
-          </div>
-        <% end %>
-      </div>
+<table class="issue_costs">
+  <% @costs_per_issue.each do |version, issue_list| %>
+    <tr>
+      <td colspan="4" class="heading"><%= version.nil? ? "Ohne Meilenstein" : version.name %></td>
+    </tr>
+
+    <% issue_list.each do |issue, total_costs| %>
+    <tr>
+      <td class="name"><%= link_to(issue.subject.truncate(50), {:controller => "timelog", :action => "index", :issue_id => issue.id},
+	                                          {:alt => issue.subject}) %></td>
+      <td class="bar"><%= line_for_issue_hours_progress(issue) %></td>
+      <td class="hour"><%= issue.spent_hours.round(2) %>h</td>
+      <td class="amount"><%= number_to_currency(total_costs, :delimiter => ".") %></td>
+    </tr>
     <% end %>
-  </div>
+    <tr>
+      <td colspan="3"></td>
+      <td class="sum"><%= number_to_currency(issue_list.sum{|i,c| c}, :delimiter => ".") %></td>
+    </tr>
+  <% end %>
+</table>
+<br>
 <% else %>
   <div class="budget_container">Bislang keine Kosten</div>
 <% end %>

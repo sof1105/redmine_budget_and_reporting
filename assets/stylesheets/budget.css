@@ -1,6 +1,6 @@
 .budget_container{
   padding-left: 8px;
-  padding-bottom: 20px;
+  padding-bottom: 25px;
   background: #FFF;
 }
 
@@ -11,11 +11,10 @@
 
 .budget_heading{
   font-weight: bold;
-  margin-top: 20px;
-  text-decoration: underline;
-  margin-bottom: 15px;
-  padding-top: 20px;
-  border-top: 2px solid #CCC;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  padding: 4px;
+  background: #DDD;
 }
 
 .budget_container_heading{
@@ -146,6 +145,7 @@ table.budget_overview td:first-child{
 table.individual_items{
     border: 1px solid black;
     border-collapse: collapse;
+    margin-left: 15px;
 }
 
 table.individual_items td{
@@ -153,43 +153,92 @@ table.individual_items td{
     padding-bottom: 2px;
 }
 
-table td.name{
+.individual_items .name{
     border-left: 1px solid black;
     width: 170px;
     padding-left: 5px;
 }
 
-table td.amount{
+.individual_items .amount{
     border-right: 1px solid black;
     width: 140px;
     text-align: right;
     padding-right: 5px;
 }
 
-table td.type{
+.individual_items .type{
     width: 50px;
 }
 
-table td.bottom{
+.individual_items .bottom{
     border-bottom: 1px solid black;
 }
-
-table td.top{
+ 
+.individual_items .top{
     border-top: 1px solit black;
 }
 
-table td.summed{
+.individual_items .summed{
     font-weight: bold;
 }
 
-table td.last{
+.individual_items .last{
     text-align: right;
     width: 150px;
     padding-right: 5px;
 }
 
-table td.big{
+.individual_items .big{
     font-size: 1.2em;
     padding-top: 8px;
     padding-bottom: 8px;
+}
+
+
+.issue_costs .amount{
+    border-right: 1px solid black;
+    text-align: right;
+    padding-right: 5px;
+    width: 150px;
+}
+
+.issue_costs .name{
+    width: 300px;
+    border-left: 1px solid black;
+    padding-left: 11px;
+}
+
+.issue_costs .bar{
+    width: 150px;
+}
+
+.issue_costs .hour{
+    width: 70px;
+    text-align: right;
+}
+
+.issue_costs .heading{
+    border: 1px solid black;
+    font-weight: bold;
+    padding: 4px;
+    padding-left: 3px;
+    font-size: 1.1em;
+    border-bottom: 0px;
+}
+
+.issue_costs .sum{
+    font-weight: bold;
+    font-size: 1.1em;
+    border-top: 1px dotted black;
+    padding-right: 5px;
+    text-align: right;
+    width: 150px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+table.issue_costs{
+    border: 1px solid black;
+    border-collapse: collapse;
+    margin-left: 15px;
 }
