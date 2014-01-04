@@ -37,8 +37,34 @@ class BudgetController < ApplicationController
     
     
     # individual costs ---------------------------------------------------------------------
-    @individual_costs = IndividualItem.until(Date.today, @project.id).limit(10).reverse
-  
+    items = IndividualItem.where(:project_id => @project.id)
+    @individual_costs =
+    {
+      "Material" =>{
+        402010 => ["Rohstoffe"],
+        402012 => ["Halbfabrikat"],
+        402013 => ["Fertikprodukte"],
+        421010 => ["H.u.B"],
+        421020 => ["Arb.platz"]},
+      "Fremdleistung" => {
+        482200 => ["UL-Zerti"],
+        440010 => ["Fremdleistung"],
+        482810 => ["sonst. Beratung"],
+        440011 => ["sonst. Beratung"]},
+      "Verrechnung" =>{
+        6167   => ["PMG Verrechnung"],
+        6118   => ["Schalt. Verrechnung"]}
+    }
+    @invdividual_costs_all_other = 0
+    type_list = []
+    
+    @individual_costs.each do |group, list|
+      list.each do |type, info|
+        @individual_costs[group][type] << items.select{|p| p.cost_type == type}.sum{|p| p.costs}
+        type_list << type
+      end
+    end
+    @individual_costs_all_other = items.select{|p| not type_list.include?(p.cost_type.to_i)}.sum{|p| p.costs}
   end
   
   def show_individual_costs
@@ -50,11 +76,16 @@ class BudgetController < ApplicationController
     if params[:individual_id] && IndividualItem.exists?(params[:individual_id])
 	  i = IndividualItem.find(params[:individual_id])
 	  if not i.destroy
-	    flash[:error] = "Konnte Eintrag nicht loeschen"
+	    flash[:error] = "Konnte Eintrag nicht löschen"
 	  end
     end
-    @items = IndividualItem.where(:project_id => @project.id).order("booking_data ASC")
+    @items = IndividualItem.where(:project_id => @project.id).order("booking_date ASC")
     render :partial => "show_individual_costs"
+  end
+
+  def delete_individual_for_project
+    IndividualItem.destroy_all(:project_id => @project.id)
+    redirect_to :action => "index"
   end
   
   # process a csv file with individual costs -------------
@@ -77,7 +108,7 @@ class BudgetController < ApplicationController
     all_projects.each {|p| project_list[p.identifier.split('-').first] = p}
     file = params[:individual_file]
     
-    rows = CSV.read(file.path, {:col_sep => ";", :headers => false})
+    rows = CSV.read(file.path, {:col_sep => ";", :headers => false, :encoding => "ISO-8859-1"})
     rows.each do |row|  
       if row.length != 11 
         @failure.append([row, "Zeile nicht Vollständig"])

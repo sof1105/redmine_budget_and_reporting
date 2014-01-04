@@ -143,3 +143,53 @@ table.budget_overview td:first-child{
   font-weight: bold;
 }
 
+table.individual_items{
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+table.individual_items td{
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+table td.name{
+    border-left: 1px solid black;
+    width: 170px;
+    padding-left: 5px;
+}
+
+table td.amount{
+    border-right: 1px solid black;
+    width: 140px;
+    text-align: right;
+    padding-right: 5px;
+}
+
+table td.type{
+    width: 50px;
+}
+
+table td.bottom{
+    border-bottom: 1px solid black;
+}
+
+table td.top{
+    border-top: 1px solit black;
+}
+
+table td.summed{
+    font-weight: bold;
+}
+
+table td.last{
+    text-align: right;
+    width: 150px;
+    padding-right: 5px;
+}
+
+table td.big{
+    font-size: 1.2em;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}

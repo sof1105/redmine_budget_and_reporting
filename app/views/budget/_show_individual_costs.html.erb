@@ -19,13 +19,12 @@
         <div class="budget_individual_label"><%= item.label %></div>
         <div class="budget_individual_costs"><%= number_to_currency(item.costs) %></div>
         <div class="budget_individual_costs">
-		  <% if User.current.allowed_to_globally?(:upload_cost_file, nil) %>
-			  <a href="#" onclick="update_after_delete('<%= url_for(
-															:controller => "budget",
-															:action => "delete_individual"
-															:individual_id => item.id) %>')">loeschen</a>
-		  <% end %>
-		</div>
+	  <% if User.current.allowed_to_globally?(:upload_cost_file, {}) %>
+	    <a href="#" onclick="update_after_delete('<%= url_for(:controller => 'budget',
+				                                  :action => 'delete_individual',
+								  :individual_id => item.id) %>')">löschen</a>
+	  <% end %>
+	</div>
       </div>
     <% end %>
   <% end %>
