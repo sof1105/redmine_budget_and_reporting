@@ -88,26 +88,6 @@ class ReportingController < ApplicationController
     file = render_to_string :xlsx => "all_projects"#, :filename => 'Projektreporting_'+@upto.to_s+'.xlsx', :disposition => 'attachment'
     send_data file, :filename => "Projektreporting_"+@upto.to_s+".xlsx", :disposition => "attachment"
   end
-  
-  def valid_date(date_string)
-    # uses date string with following format:
-    #     "2012-10-25"
-    # and returns Date object of nil depending if format is valid
-    
-    if date_string.blank?
-      return nil
-    end
-    
-    if date_string && date_string.split("-").first.length != 4
-      return nil
-    end
-    
-    begin
-      return date = Date.strptime(date_string, "%Y-%m-%d")
-    rescue
-      return nil
-    end
-  end
 
 
   ## isnt used anymore -----------------------------------------------------------------------------------
@@ -289,6 +269,26 @@ class ReportingController < ApplicationController
     end
   end
   
+  def valid_date(date_string)
+    # uses date string with following format:
+    #     "2012-10-25"
+    # and returns Date object of nil depending if format is valid
+    
+    if date_string.blank?
+      return nil
+    end
+    
+    if date_string && date_string.split("-").first.length != 4
+      return nil
+    end
+    
+    begin
+      return date = Date.strptime(date_string, "%Y-%m-%d")
+    rescue
+      return nil
+    end
+  end
+
   def set_project
     if params[:project_id]
       begin
@@ -303,7 +303,6 @@ class ReportingController < ApplicationController
       render_404
       return
     end
-    
   end
 
 end

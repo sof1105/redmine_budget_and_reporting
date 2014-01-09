@@ -49,8 +49,8 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
                                                :new_budget_forecast, :delete_budget_forecast,
                                                :new_budget_plan, :delete_budget_plan ],
                                  :reporting => [:choose_gan_file, :upload_gan_file]}
-    permission :upload_cost_file, {:budget => [:choose_individual_file, :parse_individual_file],
-								   :intermediate_budget => [:new, :new_all_projects, :create, :delete, :edit, :index]}
+    permission :upload_cost_file, {:budget => [:choose_individual_file, :parse_individual_file, :delete_individual_for_project],
+                                   :intermediate_budget => [:new, :new_all_projects, :create, :delete, :edit, :index]}
   end
   
   menu :project_menu, :reporting, {:controller => 'reporting', :action => 'index'},
@@ -62,6 +62,8 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
   require 'nokogiri'
   require 'axlsx_rails'
   require 'dispatcher' unless Rails::VERSION::MAJOR >= 3
+  require 'prawn'
+  require 'prawn/measurement_extensions'
   
 	if Rails::VERSION::MAJOR >= 3
 		ActionDispatch::Callbacks.to_prepare do

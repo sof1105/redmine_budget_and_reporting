@@ -4,8 +4,9 @@ class BudgetController < ApplicationController
   unloadable
   
   include BudgetCalculating
+  include PDFRender
   before_filter :set_project
-  before_filter :authorize, :only => [:choose_individual_file, :parse_individual_file]
+  before_filter :own_authorize, :only => [:choose_individual_file, :parse_individual_file, :delete_individual_for_project]
   
   def index
     
@@ -68,17 +69,9 @@ class BudgetController < ApplicationController
     
     # render page or generate pdf
     if params[:pdf]=="1"
-      send_data render_pdf(), :filename => "Budgetbericht.pdf", :disposition => "attachment"
+      send_data render_pdf(@project, @overall_costs), :filename => "Budgetbericht.pdf", :disposition => "attachment"
       return
     end
-
-  end
-  
-
-  def render_pdf
-    pdf=Prawn::Document.new
-    pdf.text "Hello World"
-    return pdf.render
   end
 
 
@@ -198,7 +191,14 @@ class BudgetController < ApplicationController
       render_404
       return
     end
-    
+  end
+
+  def own_authorize
+    if User.current.admin?
+      return true
+    else
+      deny_access
+    end
   end
 
 end

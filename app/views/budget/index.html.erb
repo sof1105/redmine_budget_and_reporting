@@ -117,13 +117,16 @@
     </td>
   </tr>
 </table>
+
 <br><br>
  <a href="#" class="budget_individual_detail">
    <span class="icon icon-copy"></span> Komplette Liste der Einzelkosten anzeigen
 </a>
+<% if User.current.admin? %>
 <%= link_to({:controller => "budget", :action => "delete_individual_for_project"}, 
             {:confirm => "Wirklich löschen?", :style => "margin-left:50px"}) do %>
   <span class="icon icon-del"></span>Einzelkosten für dieses Projekt löschen
+<% end %>
 <% end %>
 
 <div id="budget_floating">

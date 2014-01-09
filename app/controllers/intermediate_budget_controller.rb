@@ -118,7 +118,7 @@ class IntermediateBudgetController < ApplicationController
   end
   
   def own_authorize
-    if User.current.allowed_to_globally?(:upload_cost_file, {})
+    if User.current.admin?
       return true
     else
       deny_access
