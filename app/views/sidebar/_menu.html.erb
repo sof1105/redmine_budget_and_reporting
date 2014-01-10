@@ -2,7 +2,8 @@
 <h4>Projekt Reporting </h4>
 <ul>
   <li><%= link_to "Plannungsübersicht", {:controller => "reporting", :action => "index"} %></li>
-  <li><%= link_to "Budgetübersicht",{:controller => "budget", :action => "index"} %></li>
+  <li><%= link_to "Budgetübersicht",{:controller => "budget", :action => "index"} %>
+     (<%= link_to "PDF-Export", {:controller => 'budget', :action => 'index', :pdf => 1} %>)</li>
   <li><%= link_to "Excel Export", {:controller => "reporting", :action => "choose_export"} %></li>
 </ul>
 

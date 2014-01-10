@@ -1,20 +1,28 @@
-.report_container {
-    margin-left: 5px;
+.report_table {
+    width: 800px;
+    border: 1px solid;
+    border-collapse: collapse;
 }
 
-.report_container .header{
+.report_table tr td:first-child{
+    width: 300px;
+}
+
+.report_table tr.report_entry_first td{
+    padding-top: 8px;
+}
+
+.report_table tr.report_entry_last td{
+    padding-bottom: 8px;
+}
+
+.report_container_header{
     font-weight: bold;
-    margin-bottom: 8px;
-    margin-top: 20px;
-    padding-left: 0px;
-    padding-bottom: 2px;
-    border-bottom: 1px dotted;
     font-size: 1.1em;
-    font-style: italic;
+    background: #CCCCFF;
+    border: 1px solid;
 }
 
-.report_container .entry{
+.report_container_entry{
     font-weight: normal;
-    margin-left: 15px;
-    height: 16px;
 }

@@ -33,25 +33,32 @@
 </script>
 <% remark_id = ProjectCustomField.where(:name => "Bemerkung Projektreporting").first.try(:id) %>
 <%= form_tag({:controller => "reporting", :action => "export_excel_variable_projects"}, :id => "export_form", :method => :get) do %>
+<table class="report_table">
   <% @project_list.each do |typ, projects| %>
-  <div class="report_container">
-    <div class="header">
+  <tr>
+    <td colspan="3" class="report_container_header">
       <%= check_box_tag "typ_"+typ.to_s, 1, false,:onchange => "toggle_all_from_typ($(this))" %><%= label_tag "typ_"+typ.to_s, typ.to_s %>
-    </div>
-    <% projects.each do |p| %>
-      <div class="entry">
-        <%= check_box_tag "export["+p.id.to_s+"]", 1, false, :project_typ => typ.to_s, 
-	    :onchange => "uncheck_typ_if_unchecked($(this))", :style => "float:left" %>
-	<%= label_tag "export_"+p.id.to_s do %>
-	    <div style="width:250px; float:left; font-weight:bold; margin-left:5px"><%= p.name %></div>
-	    <div style="width:50px; float:left; font-style: italic"> <%= p.status == 1 ? "offen" : "abgeschlossen" %></div>
-	    <div style="float:left; font-style:italic"><%= p.custom_field_value(remark_id)%></div>
-	    <div style="clear:both"></div>
-	<% end %>
-      </div>
-    <% end %>
-    </div>
+    </td>
+  </tr>
+  <% projects.each_with_index do |p, i| %>
+  <tr class="<%= i==0 ? 'report_entry_first' : '' %> <%= i==projects.length-1 ? 'report_entry_last' : '' %>" >
+    <td class="report_container_entry">
+      <%= check_box_tag "export["+p.id.to_s+"]", 1, false, :project_typ => typ.to_s, 
+      :onchange => "uncheck_typ_if_unchecked($(this))", :style => "float:left" %>
+      <label for="export_<%= p.id %>">
+	<%= p.name %>
+      </label>
+    </td>
+    <td>
+      <%= p.status == 1 ? "offen" : "abgschlossen" %>
+    </td>
+    <td style="font-style:italic;">
+      <%= p.custom_field_value(remark_id) %>
+    </td>
+  </tr>
   <% end %>
+  <% end %>
+</table>
 <br><br>
 <h4>Weitere Filter</h4>
 <div class="report_container">

@@ -69,7 +69,7 @@ class BudgetController < ApplicationController
     
     # render page or generate pdf
     if params[:pdf]=="1"
-      send_data render_pdf(@project, @overall_costs, @costs_per_issue, @individual_costs, @invdividual_costs_all_other), 
+      send_data render_pdf(@project, @overall_costs, @costs_per_issue, @individual_costs, @individual_costs_all_other), 
                           :filename => "Budgetbericht.pdf", :disposition => "attachment"
       return
     end
@@ -165,7 +165,7 @@ class BudgetController < ApplicationController
     
     flash[:error] = "Es sind Fehler beim hochladen aufgetreten" if !@failure.empty?
     flash[:notice] = "Datei hochgeladen" if @failure.empty?
-    render :choose_individual_file
+    redirect_to :action => 'choose_individual_file'
   end
   
   # ------------ Helper methods --------------------
