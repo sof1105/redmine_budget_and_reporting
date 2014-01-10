@@ -69,7 +69,8 @@ class BudgetController < ApplicationController
     
     # render page or generate pdf
     if params[:pdf]=="1"
-      send_data render_pdf(@project, @overall_costs), :filename => "Budgetbericht.pdf", :disposition => "attachment"
+      send_data render_pdf(@project, @overall_costs, @costs_per_issue, @individual_costs, @invdividual_costs_all_other), 
+                          :filename => "Budgetbericht.pdf", :disposition => "attachment"
       return
     end
   end
