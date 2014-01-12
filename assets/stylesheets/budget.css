@@ -219,11 +219,11 @@ table.individual_items td{
 
 .issue_costs .heading{
     border: 1px solid black;
-    font-weight: bold;
     padding: 4px;
     padding-left: 3px;
     font-size: 1.1em;
-    border-bottom: 0px;
+    border-bottom: 1px solid;
+    background: #EEEEFF;
 }
 
 .issue_costs .sum{
