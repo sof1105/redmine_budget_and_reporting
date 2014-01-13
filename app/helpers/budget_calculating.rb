@@ -30,7 +30,8 @@ module BudgetCalculating
   end
   
   def costs_for_individualitems(project, upto = Date.today )
-    return IndividualItem.until(upto, project.id).sum(:costs)
+    all_projects = project.self_and_descendants.map{|p| p.id}
+    return IndividualItem.until(upto, all_projects).sum(:costs)
   end
   
   def costs_for_all_issues(project, upto = Date.today, salary_customfield = nil)

@@ -38,7 +38,8 @@ class BudgetController < ApplicationController
     
     
     # individual costs ---------------------------------------------------------------------
-    items = IndividualItem.where(:project_id => @project.id)
+    all_projects = @project.self_and_descendants.map{|p| p.id}
+    items = IndividualItem.where(:project_id => all_projects)
     @individual_costs =
     {
       "Material" =>{
@@ -77,7 +78,8 @@ class BudgetController < ApplicationController
 
 
   def show_individual_costs
-    @items = IndividualItem.where(:project_id => @project.id).order("booking_date ASC")
+    all_projects = @project.self_and_descendants.map{|p| p.id}
+    @items = IndividualItem.where(:project_id => all_projects).order("booking_date ASC")
     render :partial => "show_individual_costs"
   end
   
@@ -93,7 +95,8 @@ class BudgetController < ApplicationController
   end
 
   def delete_individual_for_project
-    IndividualItem.destroy_all(:project_id => @project.id)
+    all_projects = @project.self_and_descendants.map{|p| p.id}
+    IndividualItem.destroy_all(:project_id => all_projects)
     redirect_to :action => "index"
   end
   
