@@ -18,7 +18,8 @@ style_empty_left = wb.styles.add_style :sz => 10, :b => false, :border => {:styl
 style_empty_right = wb.styles.add_style :sz => 10, :b => false, :border => {:style => :hair, :color => "000000", :edges => [:right]}
 style_currency = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center}, :num_fmt => 7, # 7 is format ###.###,## €
                                      :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
-style_date = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center}, :num_fmt => Axlsx::NUM_FMT_YYYYMMDD,
+style_date = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center}, 
+	     			 :format_code => "dd.mm.yyyy",
                                  :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
 style_date_delta = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center},
                                  :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}                 
