@@ -14,7 +14,7 @@
     <tr>
       <td>tatsächliches Abschlussdatum:</td>
       <td><% tmp=@version.custom_field_value(finished_id) %>
-	  <%= text_field_tag("finished_date", tmp.empty? ? "" : I18n.l(@version.custom_field_value(finished_id).to_date), :size => 10) %> </td>
+	  <%= text_field_tag("finished_date", tmp.blank? ? "" : I18n.l(@version.custom_field_value(finished_id).to_date), :size => 10) %> </td>
     </tr>
     <tr>
       <%= form_tag({},:id => :edit_version_form) do %>
