@@ -22,7 +22,7 @@
       <%= hidden_field_tag("version[custom_field_values]["+finished_id.to_s+"]",
 	      @version.custom_field_value(finished_id)) %>
       <%= token_tag nil %>
-      <%= hidden_field_tag("key", User.current.api_token.value) %>
+      <%= hidden_field_tag("key", User.current.api_key) %>
       <td rowspan="2"><%= submit_tag("Speichern") %></td>
     </tr>
   </table>
