@@ -117,7 +117,7 @@ class BudgetController < ApplicationController
     all_projects.each {|p| project_list[p.identifier.split('-').first] = p}
     file = params[:individual_file]
     
-    rows = CSV.read(file.path, {:col_sep => ";", :headers => false, :encoding => "ISO-8859-1"})
+    rows = CSV.read(file.path, {:col_sep => ";", :headers => false, :encoding => "iso-8859-1:utf-8"})
     rows.each do |row|  
       if row.length != 11 
         @failure.append([row, "Zeile nicht Vollständig"])
