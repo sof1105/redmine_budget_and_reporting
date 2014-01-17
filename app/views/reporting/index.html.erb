@@ -4,6 +4,7 @@
 
 function open_versiondate_dialog(url, name){
    $.get(url, function(data){
+console.log(data);
       $("#floating").html(data);
       $("#floating").dialog({
         modal: true,
@@ -93,9 +94,9 @@ function reload_dialog(url){
                                                                   :version_id => forecast[0].id.to_s, :project_id => @project.id})%>',
 								  '<%= forecast[0].name %>')">
         <% if User.current.allowed_to?({:controller => "forecast", :action => "new_versiondate_forecast"}, @project) %>
-          <span class="icon icon-edit"> Bearbeiten</a>
+          <span class="icon icon-edit"></span> Bearbeiten</a>
         <% else %>
-          <span class="icon icon-move"> Ansehen</a>
+          <span class="icon icon-move"></span> Ansehen</a>
         <% end %></td>
     </tr>
   <% end %>
