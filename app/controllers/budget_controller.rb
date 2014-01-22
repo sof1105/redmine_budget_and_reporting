@@ -36,7 +36,18 @@ class BudgetController < ApplicationController
       end
     end
     
-    
+    # costs for issues of subprojects
+    if not @project.children.empty?
+      @childprojects = []
+      @project.children.each do |p|
+        tmp = {}
+        tmp[:id] = p.id
+        tmp[:name] = p.name
+        tmp[:spent_hours] = 0#
+        tmp[:total_costs] = costs_for_all_issues(p, date, salary_customfield)
+      end
+    end
+
     # individual costs ---------------------------------------------------------------------
     all_projects = @project.self_and_descendants.map{|p| p.id}
     items = IndividualItem.where(:project_id => all_projects)

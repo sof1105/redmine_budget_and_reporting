@@ -76,6 +76,20 @@
       <td class="sum"><%= number_to_currency(issue_list.sum{|i,c| c}, :delimiter => ".") %></td>
     </tr>
   <% end %>
+  <% unless @childprojects.nil? %>
+    <tr>
+      <td colspan="4" class="heading"><i>Personalkosten für Unterprojekte</i></td>
+    </tr>
+    <% @childprojects.each do |p| %>
+       <tr>
+	 <td class="name"><%= link_to(p[:name].truncate(50), {:controller => "projects", :action => "index", :id => p[:id]},
+                                                           {:alt => p[:name]}) %></td>
+         <td class="bar"></td>
+         <td class="hour"><%= p[:spent_hours].round(2) %>h</td>
+         <td class="amount"><%= number_to_currency(p[:total_costs], :delimiter => ".") %></td>
+       </tr>
+    <% end %>
+  <% end %>
 </table>
 <br>
 <% else %>

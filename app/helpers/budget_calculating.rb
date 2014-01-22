@@ -39,11 +39,11 @@ module BudgetCalculating
       salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
     end
     
-  	total_costs = 0
-  	issues = Issue.where(:project_id => project.id)
-  	issues.each do |i|
+    total_costs = 0
+    issues = Issue.where(:project_id => project.id)
+    issues.each do |i|
       total_costs += costs_for_issue(i, upto, salary_customfield)
-  	end
+    end
   	
     return total_costs
   end
