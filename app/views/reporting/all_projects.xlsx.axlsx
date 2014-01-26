@@ -71,13 +71,13 @@ wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :
     budget_forecast = project.ProjectbudgetForecast.until_date(date).latest.try(:budget)
     
     salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
-    actual_budget_issue = controller.costs_for_all_issues(project, date,salary_customfield)
+    actual_budget_issue = project.costs_issues(date)
     
-    actual_budget_individual = IndividualItem.until(date, project.id).sum(:costs)
+    actual_budget_individual = project.costs_individual_items(date)
     actual_budget = actual_budget_issue + actual_budget_individual
     
-    old_budget_issue = controller.costs_for_all_issues(project, date.months_ago(1), salary_customfield)
-    old_budget_individual = IndividualItem.until(date.months_ago(1), project.id).sum(:costs)
+    old_budget_issue = project.costs_issues(date.months_ago(1))
+    old_budget_individual = project.costs_individual_items(date.months_ago(1))
     old_budget = old_budget_issue + old_budget_individual
     
     delta = actual_budget - old_budget

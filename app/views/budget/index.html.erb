@@ -76,22 +76,28 @@
       <td class="sum"><%= number_to_currency(issue_list.sum{|i,c| c}, :delimiter => ".") %></td>
     </tr>
   <% end %>
-  <% unless @childprojects.nil? %>
+  </table>
+  <br>
+  
+  <% if not @project.children.empty? %>
+  <br>
+  <table class="issue_costs">
     <tr>
       <td colspan="4" class="heading"><i>Personalkosten für Unterprojekte</i></td>
     </tr>
-    <% @childprojects.each do |p| %>
+    <% @project.children.each do |p| %>
        <tr>
-	 <td class="name"><%= link_to(p[:name].truncate(50), {:controller => "projects", :action => "index", :id => p[:id]},
-                                                           {:alt => p[:name]}) %></td>
+	 <td class="name"><%= link_to(p.name.truncate(50), {:controller => "projects", :action => "show", :id => p.id},
+                                                           {:alt => p.name}) %></td>
          <td class="bar"></td>
-         <td class="hour"><%= p[:spent_hours].round(2) %>h</td>
-         <td class="amount"><%= number_to_currency(p[:total_costs], :delimiter => ".") %></td>
+         <td class="hour"><%= p.issues.sum{|i| i.spent_hours}.round(2) %>h</td>
+         <td class="amount"><%= number_to_currency(p.costs_issues + p.costs_individual_items, :delimiter => ".") %></td>
        </tr>
     <% end %>
+  </table>
   <% end %>
-</table>
 <br>
+
 <% else %>
   <div class="budget_container">Bislang keine Kosten</div>
 <% end %>
@@ -99,21 +105,21 @@
 <div class="budget_heading">Einzelkosten</div>
 
 <table class="individual_items">
-  <% @individual_costs.each do |group, list| %>
+  <% @individual_costs[:category].each do |group, list| %>
     <% list.each_with_index do |(type, info), index| %>
       <tr>
 	<td class="name <%=index==0 ? 'top' : ''%> <%=index==list.length-1 ? 'bottom' : ''%>">
-	  <%=@individual_costs[group][type][0] %>
+	  <%= info[0] %>
 	</td>
 	<td class="type <%=index==0 ? 'top' : ''%> <%=index==list.length-1 ? 'bottom' : ''%>">
 	  <%= type.to_s %>
 	</td>
 	<td class="amount <%=index==0 ? 'top' : ''%> <%=index==list.length-1 ? 'bottom' : ''%>">
-	  <%=number_to_currency(@individual_costs[group][type][1], :delimiter => ".") %>
+	  <%=number_to_currency(info[1], :delimiter => ".") %>
 	</td>
 	<% if index == 0%>
 	  <td class="summed last top bottom" rowspan="<%= list.length %>">
-	    <%= group %>: <br> <%=number_to_currency(@individual_costs[group].sum{|t,i| i[1]}, :delimiter => ".") %>
+	    <%= group %>: <br> <%=number_to_currency(@individual_costs[:category][group].sum{|t,i| i[1]}, :delimiter => ".") %>
 	  </td>
 	<% end %>
       </tr>
@@ -121,12 +127,28 @@
   <% end %>
   <tr>
     <td colspan="2" class="name top bottom">Sonstiges</td>
-    <td class="amount top bottom"><%=number_to_currency(@individual_costs_all_other, :delimiter => ".") %></td>
-    <td class="summed last bottom top">Sonstiges: <br><%=number_to_currency(@individual_costs_all_other, :delimiter => ".") %></td>
+    <td class="amount top bottom"><%=number_to_currency(@individual_costs[:other], :delimiter => ".") %></td>
+    <td class="summed last bottom top">Sonstiges: <br><%=number_to_currency(@individual_costs[:other], :delimiter => ".") %></td>
   </tr>
+  <% children = @project.children %>
+  <% children.each_index do |index| %>
+    <tr>
+      <td colspan="2" class="name <%= index==0 ? 'top' : '' %> <%= index==@project.children.length-1 ? 'bottom' : ''  %>">
+	<%= children[index].name %>
+      </td>
+      <td class="amount <%= index==0 ? 'top' : '' %> <%= index==@project.children.length-1 ? 'bottom' : ''  %>">
+	<%= number_to_currency(children[index].costs_individual_items, :delimiter => ".") %>
+      </td>
+      <% if index==0 %>
+        <td rowspan="<%= children.length %>" class="summed last <%= index==0 ? 'top' : '' %> <%= index==@project.children.length-1 ? 'bottom' : ''  %>">
+	  Unterprojekte:<br><%= number_to_currency(children.sum {|c| c.costs_individual_items}, :delimiter => '.') %>
+        </td>
+      <% end %>
+    </tr>
+  <% end %>
   <tr>
     <td class="top bottom summed last big" colspan="4">
-      Gesamt: <%=number_to_currency(@individual_costs.sum{|g,l| l.sum{|t,i| i[1]}}+@individual_costs_all_other , :delimiter => ".")%>
+      Gesamt: <%= number_to_currency(@project.costs_individual_items + children.sum{|c| c.costs_individual_items} , :delimiter => ".")%>
     </td>
   </tr>
 </table>

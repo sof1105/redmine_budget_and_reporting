@@ -2,7 +2,6 @@
 
 module PDFRender
   
-  
   def render_pdf(project, o_c, c_p_i, i_c, i_c_o)
     pdf = Prawn::Document.new
     pdf = Prawn::Document.new(:page_size => 'A4')

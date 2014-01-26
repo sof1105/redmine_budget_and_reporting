@@ -16,72 +16,23 @@ class BudgetController < ApplicationController
     # show actual budget for project
     @overall_costs = {}
     @costs_per_issue = {}
-    @individual_costs = []
+    @individual_costs = {}
   
     # the overall costs of the project ---------------------------------------------------
     @overall_costs[:planned] = PlannedBudget.latest_budget_for(@project.id)
     @overall_costs[:forecast] = ProjectbudgetForecast.until(date, @project.id).latest
-    @overall_costs[:individual] = costs_for_individualitems(@project, date)
-    @overall_costs[:issues] = costs_for_all_issues(@project, date, salary_customfield)
+    @overall_costs[:individual] = @project.costs_individual_items(date)
+    @overall_costs[:issues] = @project.costs_issues(date)
     
     # costs per issue -------------------------------------------------------------------
-    all_issues = Issue.where(:project_id => @project.id).group_by(&:fixed_version)
-    all_issues.each do |version, issue_list|
-      # add a list for each version and populate according
-      # to this schema: [[issue, total_costs][...]...]
-      @costs_per_issue[version] = []
-      issue_list.each do |issue|
-        total_costs = costs_for_issue(issue, date, salary_customfield)
-        @costs_per_issue[version].append([issue, total_costs])
-      end
-    end
+    @costs_per_issue = @project.costs_issues_list(date)
     
-    # costs for issues of subprojects
-    if not @project.children.empty?
-      @childprojects = []
-      @project.children.each do |p|
-        tmp = {}
-        tmp[:id] = p.id
-        tmp[:name] = p.name
-        tmp[:spent_hours] = 0#
-        tmp[:total_costs] = costs_for_all_issues(p, date, salary_customfield)
-      end
-    end
-
     # individual costs ---------------------------------------------------------------------
-    all_projects = @project.self_and_descendants.map{|p| p.id}
-    items = IndividualItem.where(:project_id => all_projects)
-    @individual_costs =
-    {
-      "Material" =>{
-        402010 => ["Rohstoffe"],
-        402012 => ["Halbfabrikat"],
-        402013 => ["Fertikprodukte"],
-        421010 => ["H.u.B"],
-        421020 => ["Arb.platz"]},
-      "Fremdleistung" => {
-        482200 => ["UL-Zerti"],
-        440010 => ["Fremdleistung"],
-        482810 => ["sonst. Beratung"],
-        440011 => ["sonst. Beratung"]},
-      "Verrechnung" =>{
-        6167   => ["PMG Verrechnung"],
-        6118   => ["Schalt. Verrechnung"]}
-    }
-    @invdividual_costs_all_other = 0
-    type_list = []
-    
-    @individual_costs.each do |group, list|
-      list.each do |type, info|
-        @individual_costs[group][type] << items.select{|p| p.cost_type == type}.sum{|p| p.costs}
-        type_list << type
-      end
-    end
-    @individual_costs_all_other = items.select{|p| not type_list.include?(p.cost_type.to_i)}.sum{|p| p.costs}
-    
+    @individual_costs = @project.costs_individual_items_list(date)
+
     # render page or generate pdf
     if params[:pdf]=="1"
-      send_data render_pdf(@project, @overall_costs, @costs_per_issue, @individual_costs, @individual_costs_all_other), 
+      send_data render_pdf(@project, @overall_costs, @costs_per_issue, @individual_costs[:category], @individual_costs[:other]), 
                           :filename => "Budgetbericht.pdf", :disposition => "attachment"
       return
     end

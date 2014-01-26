@@ -61,8 +61,7 @@ class ReportingController < ApplicationController
 
     # all projects who should be exported
     projects = Project.all.select do |p|
-      p.custom_field_value(export_id) == "1" &&
-      p.module_enabled?(:reporting)
+      p.custom_field_value(export_id) == "1"
     end
     
     # all projects sorted by typ
