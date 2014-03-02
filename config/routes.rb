@@ -7,7 +7,8 @@ scope "/projects/:project_id" do
   post "/budget/upload" => "budget#parse_individual_file"
   get "/budget/individual/:individual_id/delete" => "budget#delete_individual"
   get "/budget/individual/details" => "budget#show_individual_costs"
-  get "/budget/individual/deleteall" => "budget#delete_individual_for_project"
+  get "/budget/individual/delete_project" => "budget#delete_individual_for_project"
+  get "/budget/individual/delete_all" => "budget#delete_individual_all"
 
   get "/budget/subtotal" => "intermediate_budget#index"
   get "/budget/subtotal/new" => "intermediate_budget#new"

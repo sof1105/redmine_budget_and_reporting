@@ -61,6 +61,15 @@ class BudgetController < ApplicationController
     IndividualItem.destroy_all(:project_id => all_projects)
     redirect_to :action => "index"
   end
+
+  def delete_individual_all(redirect = true)
+    IndividualItem.destroy_all
+    # reset auto increment counter (ugly but neccessary)
+    ActiveRecord::Base.connection().execute("ALTER TABLE individual_items AUTO_INCREMENT = 1")
+    if redirect
+      redirect_to :controller => "reporting", :action => "index"
+    end
+  end
   
   # process a csv file with individual costs -------------
   def choose_individual_file
@@ -82,7 +91,11 @@ class BudgetController < ApplicationController
     all_projects.each {|p| project_list[p.identifier.split('-').first] = p}
     file = params[:individual_file]
     
-    rows = CSV.read(file.path, {:col_sep => ";", :headers => false})
+    # delete first all items
+    delete_individual_all(false)
+
+    #rows = CSV.read(file.path, {:col_sep => ";", :headers => false, :encoding => "ISO-8859-1"})
+    rows = CSV.read(file.path, {:col_sep => ";", :headers => false} #for server
     rows.each do |row|
       # convert to utf-8 because server dont like :encoding option :(
       row.each{|r| r.nil? ? nil : r.force_encoding("ISO-8859-1").encode!("UTF-8")}
@@ -95,7 +108,7 @@ class BudgetController < ApplicationController
       if row[1].to_i == 6590 # dont use IAUF types
         next
       end
-      
+
       row[5] = project_list[row[5].downcase]
       if row[5].nil?
         next
@@ -117,17 +130,19 @@ class BudgetController < ApplicationController
     end
     
     list.each do |row|
-      individual = IndividualItem.where(:receipt_number => row[0].to_i, :cost_type => row[1].to_i,
-                                        :project_id => row[5].id, :label => row[6],
-                                        :amount => row[7], :costs => row[8],
-                                        :booking_date => row[9], :receipt_date => row[10])
-      if individual.empty?
+      #individual = IndividualItem.where(:receipt_number => row[0].to_i, :cost_type => row[1].to_i,
+      #                                  :material_number => row[3].to_i, :material => row[4],
+      #                                  :project_id => row[5].id, :label => row[6],
+      #                                  :amount => row[7], :costs => row[8],
+      #                                  :booking_date => row[9], :receipt_date => row[10])
+      #if individual.empty?
         if not IndividualItem.create(:receipt_number => row[0].to_i, :cost_type => row[1].to_i,
-                                      :cost_description => row[2], :project_id => row[5].id,
+                                      :cost_description => row[2], :material_number => row[3].to_i,
+                                      :material => row[4], :project_id => row[5].id,
                                       :label => row[6], :amount => row[7], :costs => row[8],
                                       :booking_date => row[9], :receipt_date => row[10])
           @failure.append([row, "Fehler beim speichern"])
-        end
+        #end
       end
     end
     

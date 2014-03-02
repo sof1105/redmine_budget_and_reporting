@@ -24,5 +24,6 @@
   <% end %>
   <% if User.current.admin? %>
     <li><%= link_to "Neue Einzelkosten-Liste", {:controller => 'budget', :action => 'choose_individual_file'} %> </li>
+    <li><%= link_to "Alle Einzelkosten löschen", {:controller => 'budget', :action => 'delete_individual_all'} %> </li>
   <% end %>
 </ul>
