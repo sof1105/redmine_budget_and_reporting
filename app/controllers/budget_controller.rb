@@ -95,7 +95,7 @@ class BudgetController < ApplicationController
     delete_individual_all(false)
 
     #rows = CSV.read(file.path, {:col_sep => ";", :headers => false, :encoding => "ISO-8859-1"})
-    rows = CSV.read(file.path, {:col_sep => ";", :headers => false} #for server
+    rows = CSV.read(file.path, {:col_sep => ";", :headers => false}) #for server
     rows.each do |row|
       # convert to utf-8 because server dont like :encoding option :(
       row.each{|r| r.nil? ? nil : r.force_encoding("ISO-8859-1").encode!("UTF-8")}
