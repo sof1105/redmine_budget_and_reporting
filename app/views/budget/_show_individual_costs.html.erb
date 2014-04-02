@@ -6,8 +6,9 @@
       <div class="budget_individual_date">Buch. datum</div>
       <div class="budget_individual_receipt">Belegnr.</div>
       <div class="budget_individual_amount">Anzahl</div>
-      <div class="budget_individual_cost_description">Kostenart</div>
-      <div class="budget_individual_label">Objektbezeichnung</div>
+      <div class="budget_individual_receipt" style="text-align:right">&nbsp;Mat. Nr.&nbsp;</div>
+      <div class="budget_individual_label">Material</div>
+      <div class="budget_individual_cost_description">Beschreibung</div>
       <div class="budget_individual_costs">Kosten</div>
     </div>
     <% @items.each do |item| %>
@@ -15,8 +16,9 @@
         <div class="budget_individual_date"><%= I18n.l(item.booking_date) %></div>
         <div class="budget_individual_receipt"><%= item.receipt_number %></div>
         <div class="budget_individual_amount"><%= item.amount %></div>
-        <div class="budget_individual_cost_description"><%= item.cost_description %></div>
-        <div class="budget_individual_label"><%= item.label %></div>
+        <div class="budget_individual_receipt" style="text-align:right">&nbsp;<%= item.material_number %>&nbsp;</div>
+	<div class="budget_individual_label"><%= item.material %>&nbsp; </div>
+	<div class="budget_individual_cost_description"><%=item.cost_description %></div>
         <div class="budget_individual_costs"><%= number_to_currency(item.costs) %></div>
         <div class="budget_individual_costs">
 	  <% if User.current.admin? %>
