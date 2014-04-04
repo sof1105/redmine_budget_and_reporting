@@ -88,23 +88,33 @@ end
 
 module IssueIncludeCosts
 
-  def costs(upto = Date.today, salary_customfield = nil)
+  def costs(upto = Date.today, salary_customfield = nil, costs_field = nil)
     total = 0
-    subtotal = IssueSubtotal.where("issue_id = ? AND upto <= ?", self.id, upto).order("upto DESC").first
-    
     if salary_customfield.nil?
       salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
     end
-    
-    if subtotal
-      entries = TimeEntry.where("issue_id = ? AND spent_on <= ? AND spent_on > ?", self.id, upto, subtotal.upto)
-      total += subtotal.amount
-    else
-      entries = TimeEntry.where("issue_id = ? AND spent_on <= ?", self.id, upto)
+    if costs_field.nil?
+      costs_field = TimeEntryCustomField.where(:name => "Kosten/Stunde").first
     end
+    
+    # subtotal not needed anymore
+    #subtotal = IssueSubtotal.where("issue_id = ? AND upto <= ?", self.id, upto).order("upto DESC").first    
+    #if subtotal
+    #  entries = TimeEntry.where("issue_id = ? AND spent_on <= ? AND spent_on > ?", self.id, upto, subtotal.upto)
+    #  total += subtotal.amount
+    #else
+    #  entries = TimeEntry.where("issue_id = ? AND spent_on <= ?", self.id, upto)
+    #end
+
+    entries = TimeEntry.where("issue_id = ? AND spent_on <= ?", self.id, upto)
 
     entries.each do |e|
-      costs= (User.find(e.user_id).custom_field_value(salary_customfield.id) || salary_customfield.default_value || 0.0).to_f * e.hours
+      costs = 0
+      if not costs_field.nil?
+        costs = (e.custom_field_value(costs_field.id) || costs_field.default_value || 0.0).to_f * e.hours
+      else
+        costs = (User.find(e.user_id).custom_field_value(salary_customfield.id) || salary_customfield.default_value || 0.0).to_f * entry.hours
+      end
       total += costs
     end
     

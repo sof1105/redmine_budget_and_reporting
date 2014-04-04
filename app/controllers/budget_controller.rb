@@ -3,7 +3,7 @@
 class BudgetController < ApplicationController
   unloadable
   
-  include BudgetCalculating
+  #include BudgetCalculating
   include PDFRender
   before_filter :set_project
   before_filter :own_authorize, :only => [:choose_individual_file, :parse_individual_file, :delete_individual_for_project]

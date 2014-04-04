@@ -37,11 +37,6 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
           ProjectCustomField.create({:type => "ProjectCustomField", :name => "Bemerkung Projektreporting", :field_format => "text",
                                      :visible => true, :editable => true})
         end
-
-        # add salary on timelog entry
-        if TimeEntryCustomField.where(:name => "Stundenlohn").empty?
-          TimeEntryCustomField.create({:name => "Stundenlohn", :field_format => "float", :editable => false, :default_value => 50})
-        end
     end
   
   project_module :reporting do
