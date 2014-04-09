@@ -111,9 +111,10 @@ module IssueIncludeCosts
     entries.each do |e|
       costs = 0
       if not costs_field.nil?
-        costs = (e.custom_field_value(costs_field.id) || costs_field.default_value || 0.0).to_f * e.hours
+        costs_field_value = e.custom_field_value(costs_field.id)
+        costs = ((costs_field_value.blank? ? nil : costs_field_value) || User.find(e.user_id).custom_field_value(salary_customfield.id) || 0.0).to_f * e.hours
       else
-        costs = (User.find(e.user_id).custom_field_value(salary_customfield.id) || salary_customfield.default_value || 0.0).to_f * entry.hours
+        costs = (User.find(e.user_id).custom_field_value(salary_customfield.id) || 0.0).to_f * entry.hours
       end
       total += costs
     end

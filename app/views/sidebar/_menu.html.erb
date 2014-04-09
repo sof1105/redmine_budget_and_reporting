@@ -8,6 +8,7 @@
 </ul>
 
 <% if User.current.admin? %>
+<!--
 <h4>Zwischensummen für Personalkosten</h4>
 <ul>
   <li><%= link_to "Übersicht", {:controller => "intermediate_budget", :action => "index" } %></li>
@@ -16,7 +17,7 @@
   <li><%= link_to "Neu (dieses Projekt)", {:controller => "intermediate_budget", :action => "new" } %></li>
 </ul>
 <% end %>
-
+-->
 <h4> Uploads </h4>
 <ul>
   <% if User.current.allowed_to?({:controller => "reporting", :action => "choose_gan_file"}, @project) %>
