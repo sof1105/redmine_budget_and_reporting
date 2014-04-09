@@ -38,8 +38,8 @@ module ProjectIncludeBudgetReporting
     
     all_issues = Issue.where(:project_id => self.id).group_by(&:fixed_version)
     all_issues.each do |version, issue_list|
-      # add a list for each version and populate according
-      # to this schema: [[issue, total_costs][...]...]
+      # populate list according
+      # to this schema: {version => [[issue, total_costs],[...],...]}
       list[version] = []
       issue_list.each do |issue|
         total_costs = issue.costs(upto, salary_customfield)

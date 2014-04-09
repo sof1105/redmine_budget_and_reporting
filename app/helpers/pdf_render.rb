@@ -81,7 +81,8 @@ module PDFRender
           data << [name, hours, amount]
           styling << :issue
         end
-        data << [{:content => '', :colspan => 2},{:content => n2c.call(total), :align => :right}]
+        data << [{:content => ''},{:content => issues.sum{|i,c| i.spent_hours}.round(2).to_s + "h", :align => :right}, 
+                 {:content => n2c.call(total), :align => :right}]
         styling << :sum
       end
       
@@ -94,7 +95,44 @@ module PDFRender
             elsif styling[i] == :sum
               rows(i).style(:padding => [7,5])
               cells[i,0].style(:borders => [:left, :bottom])
+              cells[i,1].style(:borders => [:bottom, :top], :font_style => :bold)
               cells[i,2].style(:borders => [:right, :bottom, :top], :font_style => :bold)
+            else
+              cells[i,0].style(:borders => [:left], :font_style => :italic, :width => 370)
+              cells[i,2].style(:borders => [:right])
+            end
+          end
+        end
+      end
+
+      move_down 8.mm
+      
+      if not project.children.empty?
+        data = []
+        styling = []
+
+        data << [{:content => 'Personalkosten für Unterprojekte', :colspan => 3}]
+        styling << :heading
+        project.children.each do |child|
+          hours = child.issues.sum{|i| i.spent_hours}.round(2).to_s
+          costs = child.costs_issues + child.costs_individual_items
+          data << [{:content => child.name}, {:content => hours + 'h', :align => :right}, {:content => n2c.call(costs), :align => :right}]
+          styling << :child
+        end
+        data << [{:content => ''}, {:content => project.children.sum{|c| c.issues.sum{|i| i.spent_hours}.round(2)}.to_s, :align => :right},
+                 {:content => n2c.call(project.children.sum{|c| c.costs_issues + c.costs_individual_items}), :align => :right}]
+        styling << :sum
+
+        table(data) do
+          cells.style(:borders => [], :padding => [3,5])
+          styling.each_index do |i|
+            if styling[i] == :heading
+              rows(i).style(:borders => [:top, :bottom, :left, :right], :background_color => "EEEEEE")
+            elsif styling[i] == :sum
+              rows(i).style(:padding => [7,5])
+              cells[i,0].style(:borders => [:left, :bottom])
+              cells[i,1].style(:borders => [:top, :bottom], :font_style => :bold)
+              cells[i,2].style(:borders => [:top, :bottom, :right], :font_style => :bold)
             else
               cells[i,0].style(:borders => [:left], :font_style => :italic, :width => 370)
               cells[i,2].style(:borders => [:right])
@@ -140,8 +178,19 @@ module PDFRender
                {:content => n2c.call(i_c_o), :align => :right}, 
                {:content => "Sonstiges:\n"+n2c.call(i_c_o), :align => :right, :valign =>:center}]
       styling << :other
+      if not project.children.empty?
+        project.children.each do |child|
+          data << [{:content => child.name, :colspan => 2},{:content => n2c.call(child.costs_individual_items), :align => :right},
+                   {:content => "Unterprojekte:\n"+n2c.call(project.children.sum{|c| c.costs_individual_items}),
+                    :align => :right,
+                    :valign => :center,
+                    :rowspan => project.children.length}]
+          styling << :other
+        end
+      end
       data << [{:content => 'Gesamt: '+n2c.call(i_c.sum{|g,l| l.sum{|t,i| i[1]}}+i_c_o), :align => :right, :colspan => 4}]
       styling << :sum
+
       table(data) do
         styling.each_index do |i|
           if styling[i] == :first
