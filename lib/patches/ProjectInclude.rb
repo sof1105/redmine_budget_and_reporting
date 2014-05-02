@@ -133,12 +133,38 @@ module VersionIncludeForecastDate
   
 end
 
+module VersionIncludeCustomProgress
+  def self.included(base)
+    base.class_eval do
+      alias_method_chain :completed_percent, :custom_progress
+    end
+  end
+
+  def completed_percent_with_custom_progress
+    if issues_count == 0
+      0
+    elsif open_issues_count == 0
+      100
+    else
+      if estimated_hours == 0
+        0
+      else
+        ((spent_hours/estimated_hours)*100).round()
+      end
+    end
+  end
+end
+
 unless Project.included_modules.include? ProjectIncludeBudgetReporting
   Project.send(:include, ProjectIncludeBudgetReporting)
 end
 
 unless Version.included_modules.include? VersionIncludeForecastDate
   Version.send(:include, VersionIncludeForecastDate)
+end
+
+unless Version.included_modules.include? VersionIncludeCustomProgress
+  Version.send(:include, VersionIncludeCustomProgress)
 end
 
 unless Issue.included_modules.include? IssueIncludeCosts
