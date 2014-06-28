@@ -1,0 +1,10 @@
+<script type='text/javascript'>
+	$(document).ready(function(){
+		$('#issue_assigned_to_id').change(function(){
+			$.get();
+		});
+		$('#issue_custom_field_values_<%= custom.try(:id) %>').on('input', function(){
+			$.get();
+		})
+	});
+</script>

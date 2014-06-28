@@ -20,9 +20,14 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
 				end
 				
 				# add the amount of hours the assigned user should work on an issue
-				if IssueCustomField.where(:name => "Stunden/Woche").empty?
-					IssueCustomField.create({:name => "Stunden/Woche", :field_format => "float", :is_required => false,
-																	 :editable => true, :visible => true})
+				if IssueCustomField.where(:name => "Aufwand/Woche").empty?
+					t = Tracker.where(:name => "Aufgabe").first
+					if not t.nil?
+						tmp = IssueCustomField.create({:name => "Aufwand/Woche", :field_format => "float", :is_required => false,
+																					 :is_for_all => true, :editable => true, :visible => true})
+						tmp.trackers.push(t)
+						tmp.save
+					end
 				end
 
         # add date field for finished milestones
@@ -64,6 +69,7 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
   
   require_dependency 'gantchart_spenthours/hooks'
   require_dependency 'sidebar/hooks'
+  require_dependency 'issue_target_hours/hooks'
   
   require 'nokogiri'
   require 'axlsx_rails'
