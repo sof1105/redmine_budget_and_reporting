@@ -1,0 +1,32 @@
+<script type='text/javascript'>
+	function box_reload(){
+		var user_id = $('#issue_assigned_to_id').val();
+		$.get("<%= url_for :controller => 'weekeffort', :action => 'index', :project_id => @project.id, :issue_id => @issue.id %>&user_id="+user_id,
+				function(data) {
+					$('#weekeffort_box').html(data);
+					
+					// use update function for 'input' callback
+					$('.week_input').on('input', update);
+				});
+	}
+	
+	function update(){
+		var week = $(this).attr('name');
+		var hours = $(this).val();
+		// send update
+		$.get("<%= url_for :controller => 'weekeffort', :action => 'update', :project_id => @project.id, :issue_id => @issue.id %>&week="+week+"&hours="+hours);
+		// reload box
+		box_reload();
+	}
+
+	$(document).ready(function(){
+	
+		// initial request
+		box_reload();
+		
+		$('#issue_assigned_to_id').change(box_reload);
+	});
+</script>
+
+
+<div id="weekeffort_box"></div>

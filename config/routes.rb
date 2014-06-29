@@ -38,6 +38,7 @@ scope "/projects/:project_id" do
   get "/plan/budget/:plan_id/delete" => "forecast#delete_budget_plan"
   post "/plan/budget/new" => "forecast#new_budget_plan"
   
-  get "/targethours" => "target_hours#index"
+  get "/weekeffort" => "weekeffort#index"
+  get "/weekeffort/update" => "weekeffort#update"
 
 end

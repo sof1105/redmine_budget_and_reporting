@@ -1,21 +1,33 @@
+#encoding: utf-8
+
 class WeekeffortController < ApplicationController
 
 	def index
-		user = params[:user_id]
-		issue = params[:issue_id]
-		hours = params[:hours]
-		@errors = []
+		offset = 0
+		errors = []
 		
-		unless user && User.find(user)
-			@errors << "User wurde nicht gefunden"
+		unless params[:issue_id] && issue = Issue.find(params[:issue_id])
+			errors << "Issue wurde nicht gefunden"
+			render :partial => "overview", :locals => {:errors => errors}
 			return
 		end
 		
-		unless issue && Issue.find(issue)
-			@errors << "Issue wurde nicht gefunden"
+		if params[:user_id] && !(user = User.find(params[:user_id]))
+			errors << "Benutzer nicht gefunden"
+			render :partial => "overview", :locals => {:errors => errors}
+			return
+		elsif not params[:user_id] && !(user = issue.assigned_to)
+			errors << "Bislang kein Benutzer zugeordnet"
+			render :partial => "overview", :locals => {:errors => errors}
 			return
 		end
 		
+		
+		if params[:offset]
+			offset = params[:offset] == params[:offset].to_i.to_s ? params[:offset].to_i : 0
+		end
+		
+		render :partial => "overview", :locals => {:issue_id => issue, :user_id => user}
 	end
 	
 	def update
@@ -23,9 +35,11 @@ class WeekeffortController < ApplicationController
 	end
 	
 	def delete
-		if params[:id] && Weekeffort.find(params[:id]) && User.cu
-			
+		if params[:id] && Weekeffort.find(params[:id]) && User.current.admin?
+			Weekeffort.destroy(params[:id])
 		end
+		
+		redirect_to :action => "index"
 	end
 	
 end
