@@ -71,14 +71,14 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
 		  # use require_dependency if you plan to utilize development mode
 		  require 'patches/GanttchartPatch'
       require 'patches/ProjectInclude'
-			require 'patches/IssueInclude'
+			require 'patches/TargetHoursInclude'
 		end
 	else
 		Dispatcher.to_prepare BW_AssetHelpers::PLUGIN_NAME do
       # use require_dependency if you plan to utilize development mode
 		  require 'patches/GanttchartPatch'
       require 'patches/ProjectInclude'
-      require 'IssueInclude'
+      require 'patches/TargetHoursInclude'
 		end
 	end
   

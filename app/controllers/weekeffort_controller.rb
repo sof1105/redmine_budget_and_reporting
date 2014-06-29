@@ -1,4 +1,4 @@
-class TargetHoursController < ApplicationController
+class WeekeffortController < ApplicationController
 
 	def index
 		user = params[:user_id]
@@ -18,16 +18,14 @@ class TargetHoursController < ApplicationController
 		
 	end
 	
-	def create
+	def update
 	
 	end
 	
 	def delete
-	
+		if params[:id] && Weekeffort.find(params[:id]) && User.cu
+			
+		end
 	end
 	
-	def update
-	
-	end
-
 end
