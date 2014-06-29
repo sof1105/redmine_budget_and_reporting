@@ -18,17 +18,6 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
 					UserCustomField.create({:type => "UserCustomField", :name => "Wochenstunden", :field_format => "float",
 																	:default_value => "38", :is_required => true, :editable => false, :visible => false})
 				end
-				
-				# add the amount of hours the assigned user should work on an issue
-				if IssueCustomField.where(:name => "Aufwand/Woche").empty?
-					t = Tracker.where(:name => "Aufgabe").first
-					if not t.nil?
-						tmp = IssueCustomField.create({:name => "Aufwand/Woche", :field_format => "float", :is_required => false,
-																					 :is_for_all => true, :editable => true, :visible => true})
-						tmp.trackers.push(t)
-						tmp.save
-					end
-				end
 
         # add date field for finished milestones
         if VersionCustomField.where(:name => "Abgeschlossen").empty?

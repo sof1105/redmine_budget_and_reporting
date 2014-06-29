@@ -1,22 +1,33 @@
 class TargetHoursController < ApplicationController
 
 	def index
-		u = params[:user_id]
-		i = params[:issue_id]
+		user = params[:user_id]
+		issue = params[:issue_id]
+		hours = params[:hours]
 		@errors = []
 		
-		unless u && User.find(u)
+		unless user && User.find(user)
 			@errors << "User wurde nicht gefunden"
 			return
 		end
 		
-		unless i && Issue.find(i)
+		unless issue && Issue.find(issue)
 			@errors << "Issue wurde nicht gefunden"
 			return
 		end
 		
-		
 	end
-
+	
+	def create
+	
+	end
+	
+	def delete
+	
+	end
+	
+	def update
+	
+	end
 
 end
