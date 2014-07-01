@@ -1,26 +1,41 @@
-<b>Username</b>
+<style>
+#weekeffort_box .description {
+	display: inline-block;
+	width: 200px;
+}
 
-<table>
-	<tr>
-		<td>Kalenderwoche</td>
-		<td>1</td>
-		<td>2</td>
-		<td>3</td>
-		<td>4</td>
-	</tr>
-	<tr>
-		<td>Aufwand/Woche</td>
-		<td><input type="text" class="week_input" /></td>
-		<td><input type="text" class="week_input" /></td>
-		<td><input type="text" class="week_input" /></td>
-		<td><input type="text" class="week_input" /></td>
-	</tr>
-	<tr>
-		<td>Gesammter Aufwand</td>
-		<td>3</td>
-		<td>4</td>
-		<td>1</td>
-		<td>2</td>
-	</tr>
-</table>
+#weekeffort_box .cell {
+	display: inline-block;
+	width: 70px;
+}
 
+#weekeffort_box .cell input {
+	width: 70px;
+	margin: 0px;
+}
+</style>
+
+<% if not errors.empty? %>
+	<ul class="errors">
+	<% errors.each do |e| %>
+		<li><%= e %></li>
+	<% end %>
+	</ul>
+<% else %>
+
+<div><strong><%= user.name %></strong></div>
+<div class="description">Kalenderwoche</div>
+<% weeknumbers.each do |i| %>
+  <div class="cell"><%= i %></div>
+<% end %>
+<div></div>
+<div class="description">Aufwand/Woche</div>
+<% weeknumbers.each do |i| %>
+	<div class="cell"><input type="text" /></div>
+<% end %>
+<div></div>
+<div class="description">Bisheriger Aufwand</div>
+<div></div>
+
+
+<% end %>

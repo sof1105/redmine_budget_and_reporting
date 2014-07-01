@@ -2,32 +2,17 @@
 
 class WeekeffortController < ApplicationController
 
+	before_filter :validate_params
+
 	def index
 		offset = 0
-		errors = []
-		
-		unless params[:issue_id] && issue = Issue.find(params[:issue_id])
-			errors << "Issue wurde nicht gefunden"
-			render :partial => "overview", :locals => {:errors => errors}
-			return
-		end
-		
-		if params[:user_id] && !(user = User.find(params[:user_id]))
-			errors << "Benutzer nicht gefunden"
-			render :partial => "overview", :locals => {:errors => errors}
-			return
-		elsif not params[:user_id] && !(user = issue.assigned_to)
-			errors << "Bislang kein Benutzer zugeordnet"
-			render :partial => "overview", :locals => {:errors => errors}
-			return
-		end
-		
 		
 		if params[:offset]
-			offset = params[:offset] == params[:offset].to_i.to_s ? params[:offset].to_i : 0
+			offset = params[:offset] == params[:offset].to_i.to_s ? params[:offset].to_i : offset
 		end
 		
-		render :partial => "overview", :locals => {:issue_id => issue, :user_id => user}
+		weeknumbers = (0..3).map{|i| Date.today.cweek+offset+i}		
+		render :partial => "overview", :locals => {:issue => @issue, :user => @user, :errors => @errors, :weeknumbers => weeknumbers}
 	end
 	
 	def update
@@ -40,6 +25,40 @@ class WeekeffortController < ApplicationController
 		end
 		
 		redirect_to :action => "index"
+	end
+	
+	def validate_params
+	
+		@errors = []
+	
+		if !User.current.admin?
+			@errors << "Nur mit Admin Rechten veränderbar"
+			return
+		end
+	
+		if params[:project_id].blank? || !@project = Project.find(params[:project_id])
+			@errors << "Projekt nicht gefunden"
+			return
+		end
+		
+		if params[:issue_id].blank? || !@issue = Issue.find(params[:issue_id])
+			@errors << "Issue wurde nicht gefunden"
+			return
+		end
+		
+		if @issue && !@project.issues.include?(@issue)
+			@errors << "Ticket nicht Projekt zugeordnet!"
+			return
+		end
+		
+		if !params[:user_id].blank? && !(@user = User.find(params[:user_id]))
+			@errors << "Benutzer nicht gefunden"
+			return
+		elsif params[:user_id].blank? && !(@user = @issue.assigned_to)
+			@errors << "Bislang kein Benutzer zugeordnet"
+			return
+		end
+	
 	end
 	
 end
