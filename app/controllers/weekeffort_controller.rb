@@ -11,12 +11,25 @@ class WeekeffortController < ApplicationController
 			offset = params[:offset] == params[:offset].to_i.to_s ? params[:offset].to_i : offset
 		end
 		
-		weeknumbers = (0..3).map{|i| Date.today.cweek+offset+i}		
+		weeknumbers = (0..3).map{|i| [offset+i, Date.today.cweek+offset+i]}
+		@issue.assigned_to = @user
+		@issue.save
 		render :partial => "overview", :locals => {:issue => @issue, :user => @user, :errors => @errors, :weeknumbers => weeknumbers}
 	end
 	
 	def update
-	
+		if params[:hours] && (!params[:weekoffset].blank? && params[:weekoffset] == params[:weekoffset].to_i.to_s)
+			
+				date = Date.commercial(Date.today.cwyear, Date.today.cweek+params[:weekoffset].to_i)
+			
+				w = Weekeffort.find_or_create_by_cweek_and_cyear_and_issue_id(date.cweek, date.cwyear, @issue.id)
+				w.hours = params[:hours].to_f
+				w.save
+				render :partial => "update"
+				return
+		else
+			render :partial => "update", :status => 400
+		end
 	end
 	
 	def delete

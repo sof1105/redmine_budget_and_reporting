@@ -2,15 +2,17 @@
 
 #weekeffort_box {
 	display: inline-block;
-	margin-left: 100px;
+	margin-left: 140px;
 	padding: 15px;
 	border: 1px solid #DDD;
 }
 
+
 #weekeffort_box .row {
 	height: 25px;
-	vertical-align: middle;
 	border-top: 1px solid #DDD;
+	clear: both;
+	width: 590px;
 }
 
 #weekeffort_box .row.first {
@@ -19,26 +21,52 @@
 }
 
 #weekeffort_box .description {
-	display: inline-block;
-	width: 150px;
-	margin: 0px;
+	width: 300px;
 	border-right: 1px solid #DDD;
-	height: 100%;
-	padding-left: 10px;
-	padding-top: 4px;
+	float: left;
+	height: 20px;
+	padding-top: 5px;
 }
 
 #weekeffort_box .cell {
-	display: inline-block;
 	width: 70px;
-	height: 100%;
 	border-right: 1px solid #DDD;
+	float: left;
+	padding-top: 5px;
+	height: 20px;
+	text-align: center;
 }
 
-#weekeffort_box .cell input {
-	width: 50px;
+#weekeffort_box .cellinput {
+	width: 71px;
 	margin: 0px;
 	padding: 0px;
+	float: left;
+	height: 25px;
+}
+
+#weekeffort_box .cellinput input {
+	border: 1px solid #DDD;
+	margin-left: -1px;
+	margin-top: -1px;
+	height: 25px;
+	width: 60px;
+	padding: 0px;
+	padding-left: 5px;
+	padding-right: 5px;
+	text-align: center;
+}
+
+input[type=text]:focus {
+  box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+  padding: 3px 0px 3px 3px;
+  margin: 5px 1px 3px 0px;
+  border: 1px solid rgba(81, 203, 238, 1);
+}
+
+#weekeffort_box #error {
+	margin-top: 20px;
+	color: red;
 }
 </style>
 
@@ -53,18 +81,20 @@
 <div>Wöchentlicher Aufwand für <strong><%= user.name %></strong></div>
 <div class="row first">
 	<div class="description">Kalenderwoche</div>
-	<% weeknumbers.each do |i| %>
-		<div class="cell"><%= i %></div>
+	<% weeknumbers.each do |i,w| %>
+		<div class="cell"><%= w %></div>
 	<% end %>
 </div>
 <div class="row">
-	<div class="description">Aufwand/Woche</div>
-	<% weeknumbers.each do |i| %>
-		<div class="cell"><input type="text" /></div>
+	<div class="description">Aufwand/Woche für diese Aufgabe</div>
+	<% weeknumbers.each do |i,w| %>
+		<div class="cellinput"><input type="text" name="<%= i %>" value="<%= issue.effort(i) %>"/></div>
 	<% end %>
 </div>
 <div class="row">
-	<div class="description">Bisheriger Aufwand</div>
+	<div class="description">Gesammter Aufwand für <%= @user.name %></div>
+	<% weeknumbers.each do |i,w| %>
+		<div class="cell"><%= user.weekly_hours(i) %>/<%= user.week_workhours %></div>
+	<% end %>
 </div>
-
 <% end %>

@@ -9,6 +9,11 @@ module IssueTargethours
 	def target_hours(date = Date.today)
 		# return the target hours, which the issue should have been worked on, up to the provided date
 		total = 0
+		
+		if date.is_a? Fixnum
+			date = Date.commercial(Date.today.cwyear, Date.today.cweek+date)
+		end
+		
 		if self.start_date <= date
 			# add fractional, if start_date is not monday
 			total += self.effort(start_date)/5 * [4-((date.wday+6)%7)+1, 0].max
@@ -24,8 +29,13 @@ module IssueTargethours
 	end
 	
 	def effort(date = Date.today)
+	
+		if date.is_a? Fixnum
+			date = Date.commercial(Date.today.cwyear, Date.today.cweek+date)
+		end
+		
 		# return the planned effort for this week
-		e = Weekeffort.where(:cweek => date.cweek, :cyear => date.cwyear).first
+		e = Weekeffort.where(:issue_id => self.id, :cweek => date.cweek, :cyear => date.cwyear).first
 		return e.nil? ? 0 : e.hours
 	end
 	
@@ -35,6 +45,11 @@ end
 module UserTargethours
 
 	def weekly_hours(date = Date.today)
+	
+		if date.is_a? Fixnum
+			date = Date.commercial(Date.today.cwyear, Date.today.cweek+date)
+		end
+		
 		#return the weekly hours a user is suppost to work on
 		issues = Issue.where("assigned_to_id = ? AND (start_date <= ? OR due_date >= ?)", self.id, date.end_of_week, date.beginning_of_week)
 		total = 0
@@ -42,6 +57,11 @@ module UserTargethours
 			total += i.effort(date)
 		end
 		return total
+	end
+	
+	def week_workhours
+		c = UserCustomField.where(:name => "Wochenstunden").first.try(:id)
+		return c.nil? ? 0 : self.custom_field_value(c) || 0
 	end
 
 end

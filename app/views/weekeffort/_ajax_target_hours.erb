@@ -1,32 +1,59 @@
 <script type='text/javascript'>
-	function box_reload(){
-		var user_id = $('#issue_assigned_to_id').val();
-		$.get("<%= url_for :controller => 'weekeffort', :action => 'index', :project_id => @project.id, :issue_id => @issue.id %>&user_id="+user_id,
-				function(data) {
-					$('#weekeffort_box').html(data);
-					
-					// use update function for 'input' callback
-					$('.week_input').on('input', update);
-				});
-	}
 	
-	function update(){
-		var week = $(this).attr('name');
-		var hours = $(this).val();
-		// send update
-		$.get("<%= url_for :controller => 'weekeffort', :action => 'update', :project_id => @project.id, :issue_id => @issue.id %>&week="+week+"&hours="+hours);
-		// reload box
-		box_reload();
-	}
 
 	$(document).ready(function(){
+		var offset=0;
+	
+		function box_reload(){
+			var user_id = $('#issue_assigned_to_id').val();
+			// clear errors
+			$("#weekeffort_box #error").html('');
+			$.get("<%= url_for :controller => 'weekeffort', :action => 'index', :project_id => @project.id, :issue_id => @issue.id %>&user_id="+
+							user_id+"&offset="+offset,
+					function(data) {
+						$('#weekeffort_content').html(data);
+					
+						// use update function for 'input' callback
+						$('.cellinput input').on('change', update);
+					});
+		}
+	
+		function update(){
+			var weekoffset = $(this).attr('name');
+			var hours = $(this).val();
+			// send update
+			$.get("<%= url_for :controller => 'weekeffort', :action => 'update', :project_id => @project.id, :issue_id => @issue.id %>&weekoffset="+weekoffset+"&hours="+hours)
+				.done(box_reload())
+				.fail(function(xhr, text_status){
+						if (xhr.status === 400){
+							$("#weekeffort_box #error").html("Es ist ein Server Fehler aufgetreten.<br /> Bitte den Administrator kontaktieren.");
+						}
+					});
+		}
 	
 		// initial request
 		box_reload();
 		
 		$('#issue_assigned_to_id').change(box_reload);
+		$('#weekeffort_box #earlier').click(function(e){
+			e.preventDefault();
+			offset = offset - 4;
+			box_reload();
+		});
+		$('#weekeffort_box #later').click(function(e){
+			e.preventDefault();
+			offset = offset + 4;
+			box_reload();
+		});
 	});
 </script>
 
 
-<div id="weekeffort_box"></div>
+<div id="weekeffort_box">
+	<div id="weekeffort_content"></div>
+	<div id="error"></div>
+	<div style="margin-top: 20px;">
+		<div style="float:left"><a href="#" id="earlier">&lt&lt Früher</a></div>
+		<div style="float:right"><a href="#" id="later">Später &gt&gt</a></div>
+	</div>
+</div>
