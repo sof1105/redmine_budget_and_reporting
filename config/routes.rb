@@ -40,5 +40,6 @@ scope "/projects/:project_id" do
   
   get "/weekeffort" => "weekeffort#index"
   get "/weekeffort/update" => "weekeffort#update"
+  get "/weekeffort/overview" => "weekeffort#overview_all"
 
 end

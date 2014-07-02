@@ -2,7 +2,7 @@
 
 class WeekeffortController < ApplicationController
 
-	before_filter :validate_params
+	before_filter :validate_params, :except => :overview_all
 
 	def index
 		offset = 0
@@ -16,6 +16,24 @@ class WeekeffortController < ApplicationController
 		@issue.save
 		render :partial => "overview", :locals => {:issue => @issue, :user => @user, :errors => @errors, :weeknumbers => weeknumbers}
 	end
+	
+	def overview_all
+		c = UserCustomField.where(:name => "Abteilung").first.try(:id)
+		if !c.nil?
+			@users = User.joins(:custom_values).where(:custom_values => {:custom_field_id => c,
+																								:value => ["Mikroelektronik", "Konstruktion", "Elektronik Design", "Leistungselektronik"]})
+		else
+			@users = User.all
+		end
+		
+		@offset = 0
+		
+		if params[:offset]
+			@offset = params[:offset] == params[:offset].to_i.to_s ? params[:offset].to_i : @offset
+		end
+		
+	end
+	
 	
 	def update
 		if params[:hours] && (!params[:weekoffset].blank? && params[:weekoffset] == params[:weekoffset].to_i.to_s)

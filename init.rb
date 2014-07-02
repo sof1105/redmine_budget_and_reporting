@@ -2,7 +2,7 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
   name 'Redmine Budget And Reporting plugin'
   author 'Moritz Hamann'
   description 'Reports and Costs statistics'
-  version '0.0.3'  
+  version '0.0.4'  
 
     # only create field if CustumField table already exists
     if ActiveRecord::Base.connection.table_exists? 'custom_fields'   
