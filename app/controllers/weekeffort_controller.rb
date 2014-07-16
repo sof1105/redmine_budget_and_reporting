@@ -20,17 +20,19 @@ class WeekeffortController < ApplicationController
 	def overview_all
 		c = UserCustomField.where(:name => "Abteilung").first.try(:id)
 		if !c.nil?
-			@users = User.joins(:custom_values).where(:custom_values => {:custom_field_id => c,
-																								:value => ["Mikroelektronik", "Konstruktion", "Elektronik Design", "Leistungselektronik"]})
+			@users = User.joins(:custom_values).where(:custom_values => {:custom_field_id => c, :value => ["Mikroelektronik", "Konstruktion", "Elektronik Design", "Leistungselektronik"]})
 		else
 			@users = User.all
 		end
 		
+                
 		@offset = 0
 		
 		if params[:offset]
 			@offset = params[:offset] == params[:offset].to_i.to_s ? params[:offset].to_i : @offset
 		end
+                
+                
 		
 	end
 	

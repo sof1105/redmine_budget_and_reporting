@@ -50,7 +50,7 @@ module UserTargethours
 			date = Date.commercial(Date.today.cwyear, Date.today.cweek+date)
 		end
 		
-		#return the weekly hours a user is suppost to work on
+		#return the hours a user is assigend to this week
 		issues = Issue.where("assigned_to_id = ? AND (start_date <= ? OR due_date >= ?)", self.id, date.end_of_week, date.beginning_of_week)
 		total = 0
 		issues.each do |i|
@@ -60,6 +60,7 @@ module UserTargethours
 	end
 	
 	def week_workhours
+                # return the hours a user has to work in a week as defined in his contract
 		c = UserCustomField.where(:name => "Wochenstunden").first.try(:id)
 		return c.nil? ? 0 : self.custom_field_value(c) || 0
 	end

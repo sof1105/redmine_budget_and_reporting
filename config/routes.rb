@@ -40,6 +40,8 @@ scope "/projects/:project_id" do
   
   get "/weekeffort" => "weekeffort#index"
   get "/weekeffort/update" => "weekeffort#update"
-  get "/weekeffort/overview" => "weekeffort#overview_all"
 
 end
+
+get "/weekeffort/overview" => "weekeffort#overview_all"
+get "/weekeffort/user/:user_id" => "weekeffort#user_overview"
