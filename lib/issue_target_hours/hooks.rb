@@ -10,6 +10,13 @@ module Redmine_budget_and_reporting
 				end
 			end
 		end
+
+                def view_issues_show_details_bottom(context ={})
+                  if context[:issue]
+                    s = "<tr><th>Sollstundenzahl:</th><td>"+context[:issue].target_hours.to_s+"</td></tr>"
+                    return s
+                  end
+                end
 		
 		def view_layouts_base_sidebar(context = {})
 			if context[:controller] && User.current.admin? && 

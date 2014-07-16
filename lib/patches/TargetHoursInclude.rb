@@ -20,7 +20,7 @@ module IssueTargethours
 			
 			# TODO: one query for each week. this could may be optimized
 			((self.start_date.cweek+1)...date.cweek).each do |w|
-				total += self.effort(Date.commercial(date.cwyear, date.cweek))
+				total += self.effort(Date.commercial(self.start_date.cwyear, w))
 			end
 			# add fractional for the last days
 			total += self.effort(date)/5 * [((date.wday+6)%7)+1, 5].min
