@@ -1,0 +1,61 @@
+<style>
+	.weekeffort {
+		margin-top: 40px;
+		border-collapse: collapse;
+	}
+	
+	.weeknumbers {
+		font-weight: bold;
+		padding: 4px;
+		border-bottom: 1px solid;
+		text-align: center;
+		margin-bottom: 10px;
+	}
+	
+	.weekly_hours {
+		width: 50px;
+		text-align: center;
+		padding: 4px;
+		border-top: 1px solid #DDD;
+	}
+	
+	.workhours {
+		text-align: right;
+		border-left: 1px solid;
+		border-top: 1px solid #ddd;
+		padding-left: 10px;
+	}
+	
+	.workhours_description {
+		text-align: right;
+		border-bottom: 1px solid #000;
+		padding-left: 10px;
+		font-weight: bold;
+	}
+	
+	.username {
+		border-top: 1px solid #DDD;
+	}
+
+</style>
+
+<h2>Übersicht über Wochenauslastung</h2>
+
+<table class="weekeffort">
+	<tr>
+		<td class="weeknumbers"></td>
+		<% @weeknumbers.each do |w| %>
+		<td class="weeknumbers"><%= w.cweek%></td>
+		<% end %>
+		<td class="workhours_description">Wochenstunden</td>
+	</tr>
+	<% @users.each do |u| %>
+	<tr>
+		<td class="username"><%= u.name %><%# link_to(u.name, {:controller => "weekeffort", :action => "user_overview", :user_id => u.id})%></td>
+		<% @weeknumbers.each do |w| %>
+		<td class="weekly_hours"><%= u.weekly_hours(w) %></td>
+		<% end %>
+		<td class="workhours"><%= u.week_workhours %></td>
+	</tr>
+	<% end %>
+</table>

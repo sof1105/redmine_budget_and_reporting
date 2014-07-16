@@ -32,8 +32,17 @@ class WeekeffortController < ApplicationController
 			@offset = params[:offset] == params[:offset].to_i.to_s ? params[:offset].to_i : @offset
 		end
                 
-                
+    @weeknumbers = (0..8).map{|i| Date.commercial(Date.today.cwyear, Date.today.cweek+@offset+i)}
 		
+	end
+	
+	def user_overview
+		if !params[:user_id].blank? && User.find(params[:user_id])
+			@user = User.find(params[:user_id])
+			
+		else
+			@errors = "User nicht gefunden"
+		end
 	end
 	
 	
