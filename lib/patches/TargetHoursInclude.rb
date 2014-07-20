@@ -14,7 +14,7 @@ module IssueTargethours
 			date = Date.commercial(Date.today.cwyear, Date.today.cweek+date)
 		end
 		
-		if self.start_date <= date
+		if self.start_date && self.start_date <= date
 			# add fractional, if start_date is not monday
 			total += self.effort(start_date)/5 * [4-((date.wday+6)%7)+1, 0].max
 			
