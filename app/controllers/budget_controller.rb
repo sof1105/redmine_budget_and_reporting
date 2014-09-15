@@ -156,9 +156,9 @@ class BudgetController < ApplicationController
   def get_project_identifier(i)
     i = i.split("-")
     if i.length > 1 && is_numeric(i[1][0])
-      return i[0,2].join('-')
+      return i[0,2].join('-').downcase
     else
-      return i[0]
+      return i[0].downcase
     end
   end
 
