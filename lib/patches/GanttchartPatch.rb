@@ -1,13 +1,13 @@
 module NewSortingIssues
-	
+
 	def self.included(base)
-		base.send(:include, InstanceMethods)				
+		base.send(:include, InstanceMethods)
 		base.class_eval do
 			alias_method_chain :sort_issues!, :custom_ordering
 			alias_method_chain :line_for_issue, :double_line
 		end
 	end
-	
+
 	module InstanceMethods
 		def sort_issues_with_custom_ordering!(issues)
 			#issues.sort! { |a, b| gantt_issue_compare(a, b, issues) }
@@ -35,11 +35,11 @@ module NewSortingIssues
 				end
 			end
 		end
-		
+
 		def line_for_issue_with_double_line(issue, options)
                         # Skip issues that don't have a due_before (due_date or version's due_date)
 			if issue.is_a?(Issue) && issue.due_before
-			  
+
                           total_hours = issue.total_spent_hours
 			  overbooked = false
 			  if issue.estimated_hours && issue.estimated_hours > 0
@@ -54,7 +54,7 @@ module NewSortingIssues
                           else
 				progress_hours = nil
 			  end
-			
+
 			  coords = coordinates(issue.start_date, issue.due_before, issue.done_ratio, options[:zoom])
 			  coords_for_hours = coordinates(issue.start_date, issue.due_before, progress_hours, options[:zoom])
 			  label = issue.leaf? ? "#{ issue.done_ratio }%" : "#{issue.subject} #{issue.done_ratio}%"
@@ -80,7 +80,7 @@ module NewSortingIssues
 			  ''
 			end
       end
-      
+
       def html_task_hours(params, coords, options={})
         output = ''
         # Renders the task bar, with progress and late
@@ -119,10 +119,105 @@ module NewSortingIssues
         @lines << output
         output
       end
-	
+
 	end
 end
 
+module CriticalPath
+
+	def self.included(base)
+
+		base.send(:include, InstanceMethods)
+		base.class_eval do
+			alias_method_chain :render_project, :critical_path
+			alias_method_chain :render_issues, :critical_path
+		end
+	end
+
+	module InstanceMethods
+
+		def render_project_with_critical_path(project, options={})
+			subject_for_project(project, options) unless options[:only] == :lines
+			line_for_project(project, options) unless options[:only] == :subjects
+			options[:top] += options[:top_increment]
+			options[:indent] += options[:indent_increment]
+
+			# get critical path
+			options[:critical_path] = critical_path_for_project(project)
+
+			@number_of_rows += 1
+			return if abort?
+			issues = project_issues(project).select {|i| i.fixed_version.nil?}
+			sort_issues!(issues)
+			if issues
+				render_issues(issues, options)
+				return if abort?
+			end
+			versions = project_versions(project)
+			versions.each do |version|
+				render_version(project, version, options)
+			end
+			# Remove indent to hit the next sibling
+			options[:indent] -= options[:indent_increment]
+		end
+
+		def render_issues_with_critical_path(issues, options={})
+			@issue_ancestors = []
+			critical_path = critical_path_for_project(Project.first)
+			issues.each do |i|
+				subject_for_issue(i, options) unless options[:only] == :lines
+				line_for_issue(i, options) unless options[:only] == :subjects
+				options[:top] += options[:top_increment]
+				@number_of_rows += 1
+				break if abort?
+			end
+			options[:indent] -= (options[:indent_increment] * @issue_ancestors.size)
+		end
+	end
+
+	def critical_path_for_project(project)
+		issue_ids = project_issues(project).map {|i| i.id}
+		rel = relations
+		puts rel
+
+		#all issues which start a relation chain
+		start = []
+
+		if rel != {}
+			# find start of relations chains
+			rel.each do |id, relations_array|
+
+				relations_array.each do |r|
+					if start.include?(r.issue_to_id)
+						start.delete(r.issue_to_id)
+					end
+					start << r.issue_from_id
+				end
+			end
+
+			puts start
+
+			# find critical path
+			start.each do |id|
+
+			end
+
+		else
+			return []
+		end
+	end
+
+	def enddate_for_issue(issue)
+
+	end
+
+end
+
+
 unless Redmine::Helpers::Gantt.included_modules.include? NewSortingIssues
 	Redmine::Helpers::Gantt.send(:include, NewSortingIssues)
+end
+
+unless Redmine::Helpers::Gantt.included_modules.include? CriticalPath
+	Redmine::Helpers::Gantt.send(:include, CriticalPath)
 end
