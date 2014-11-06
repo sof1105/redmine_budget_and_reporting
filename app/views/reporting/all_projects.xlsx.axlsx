@@ -18,19 +18,19 @@ style_empty_left = wb.styles.add_style :sz => 10, :b => false, :border => {:styl
 style_empty_right = wb.styles.add_style :sz => 10, :b => false, :border => {:style => :hair, :color => "000000", :edges => [:right]}
 style_currency = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center}, :num_fmt => 7, # 7 is format ###.###,## €
                                      :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
-style_date = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center}, 
+style_date = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center},
 	     			 :format_code => "dd.mm.yyyy",
                                  :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
 style_date_delta = wb.styles.add_style :sz => 10, :b => false, :alignment => {:horizontal => :center, :vertial => :center},
-                                 :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}                 
+                                 :border => {:style => :hair, :color => "000000", :edges => [:top, :left, :right, :bottom]}
 
 wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :fit_to_height => 1, :fit_to_height => 1}) do |sheet|
-  
+
   @projects.each do |project|
-    
+
     # add empty row on top (dont want to start at the beginning of the sheet)
     sheet.add_row([nil], :height => 14)
-    
+
     # set projectnumber to first part of identifier, if it starts with "ed"
     projectnumber = project.identifier.split("-").first
     if projectnumber && projectnumber[0,2] == "ed"
@@ -40,17 +40,17 @@ wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :
     end
     sheet.add_row(["Projekt-Nr.:", projectnumber, project.name, nil, nil, nil], :height => 14, #added extra nil cell to prevent overflow in next cell
             :style => [style_heading_left, style_heading_top, style_heading_top, style_heading_top, style_heading_right])
-    
-    
+
+
     # add projectleaders
     projectleaders = project.users_by_role[@projectleader_role].try(:map) {|u| u.name}
-    projectleaders = ["Projektleiter:"] << projectleaders.try(:join,", ") 
+    projectleaders = ["Projektleiter:"] << projectleaders.try(:join,", ")
     projectleaders = projectleaders + [nil, nil, nil]
     row = sheet.add_row(projectleaders, :height => 14, :style => [style_projectleader_left, style_normal, nil, nil, style_projectleader_right])
     height = ((row.cells[1].autowidth || 1.0) / 72).ceil * 14
     row.cells[1].merge(row.cells[4])
     row.height = height
-    
+
     # add Project comment
     project_customfield = ProjectCustomField.where(:name => "Bemerkung Projektreporting").first
     project_comment = project.custom_field_value(project_customfield.id)
@@ -59,49 +59,56 @@ wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :
     height = ((row.cells[1].autowidth || 1.0) / 72).ceil * 14
     row.cells[1].merge(row.cells[4])
     row.height = height
-    
+
     # add empty row
     sheet.add_row([nil, nil, nil, nil, nil], :height => 14, :style => [style_empty_left, nil, nil, nil, style_empty_right])
-    
+
     # add table heading
-    sheet.add_row([nil, "geplant", "Prognose", "IST-Wert", "Delta (1 Mon.)"], :height => 14, :style => style_tableheading)
-    
+    sheet.add_row([nil, "geplant", "Prognose", "IST-Wert", "Delta (1 Mon.)", "Ist-Aufwand", "Geplannter Aufwand", "Differenz", "Fertigstellungsgrad"], :height => 14, :style => style_tableheading)
+
     # add budget information
     planned_budget = project.PlannedBudget.until_date(date).latest.try(:budget)
     budget_forecast = project.ProjectbudgetForecast.until_date(date).latest.try(:budget)
-    
+
     salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
     actual_budget_issue = project.costs_issues(date)
-    
+
     actual_budget_individual = project.costs_individual_items(date)
     actual_budget = actual_budget_issue + actual_budget_individual
-    
+
     old_budget_issue = project.costs_issues(date.months_ago(1))
     old_budget_individual = project.costs_individual_items(date.months_ago(1))
     old_budget = old_budget_issue + old_budget_individual
-    
+
     delta = actual_budget - old_budget
-    
-    sheet.add_row(["Budget", planned_budget, budget_forecast, actual_budget, delta], :height => 14,
-                    :style =>[style_table_left, style_currency, style_currency, style_currency, style_currency])
-    
+
+    sheet.add_row(["Budget", planned_budget, budget_forecast, actual_budget, delta, "", "", "", ""], :height => 14,
+                    :style =>[style_table_left, style_currency, style_currency, style_currency, style_currency, style_table_normal, style_table_normal, style_table_normal, style_table_normal])
+
     # add information for each version
     version_customfield = VersionCustomField.where(:name => "Abgeschlossen").first
     versions = project.versions
     versions.sort! {|a,b| a.name <=> b.name}
     versions.each do |v|
-        name = v.name
-        planned_date = v.effective_date || "" # empty string, but not nil, so that version name doesn't overlow into next cell
-        forecast_date = v.VersiondateForecast.until_date(date).latest.try(:forecast_date)
-	closed_date = v.custom_field_value(version_customfield.try(:id)).try(:to_date)
-        delta = VersiondateForecast.delta(1, v.id).to_i
-        sheet.add_row([name, planned_date, forecast_date, closed_date, delta], :height => 14,
-                        :style => [style_table_left, style_date, style_date, style_date, style_date_delta])
+      name = v.name
+      planned_date = v.effective_date || "" # empty string, but not nil, so that version name doesn't overlow into next cell
+      forecast_date = v.VersiondateForecast.until_date(date).latest.try(:forecast_date)
+      closed_date = v.custom_field_value(version_customfield.try(:id)).try(:to_date)
+      delta = VersiondateForecast.delta(1, v.id).to_i
+
+      # progress
+      spent_hours = v.spent_hours
+      estimated_hours = v.estimated_hours
+      hours_delta = estimated_hours - spent_hours
+      done_ratio = v.done_ratio
+
+      sheet.add_row([name, planned_date, forecast_date, closed_date, delta, spent_hours, estimated_hours, hours_delta, done_ratio.to_s+"%"], :height => 14,
+                        :style => [style_table_left, style_date, style_date, style_date, style_date_delta, style_table_normal, style_table_normal, style_table_normal, style_table_normal])
     end
-    
+
     sheet.add_row([nil], :height => 14)
-  
+
   end
-  
+
   sheet.column_widths 20, 20, 20, 20, 20
 end

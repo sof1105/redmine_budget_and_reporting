@@ -1,7 +1,7 @@
 module ProjectIncludeBudgetReporting
 
   def self.included(base)
-    base.class_eval do 
+    base.class_eval do
       has_many :IndividualItem, :dependent => :destroy
       has_many :PlannedBudget, :dependent => :destroy
       has_many :ProjectbudgetForecast, :dependent => :destroy
@@ -13,7 +13,7 @@ module ProjectIncludeBudgetReporting
     children.each do |c|
       total += c.costs_issues(upto)
     end
-    
+
     salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
     issues.each do |i|
       total += i.costs(upto, salary_customfield)
@@ -27,7 +27,7 @@ module ProjectIncludeBudgetReporting
     children.each do |c|
       total += c.costs_individual_items
     end
-    
+
     total += IndividualItem.until(upto, self.id).sum(:costs)
     return total
   end
@@ -35,7 +35,7 @@ module ProjectIncludeBudgetReporting
   def costs_issues_list(upto=Date.today)
     list = {}
     salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
-    
+
     all_issues = Issue.where(:project_id => self.id).group_by(&:fixed_version)
     all_issues.each do |version, issue_list|
       # populate list according
@@ -72,7 +72,7 @@ module ProjectIncludeBudgetReporting
     }
     list[:other] = 0
     type_list = []
-    
+
     list[:category].each do |group, subgroup|
       subgroup.each do |type, info|
         list[:category][group][type] << items.select{|p| p.cost_type == type}.sum{|p| p.costs}
@@ -80,10 +80,10 @@ module ProjectIncludeBudgetReporting
       end
     end
     list[:other] = items.select{|p| not type_list.include?(p.cost_type.to_i)}.sum{|p| p.costs}
-    
+
     return list
   end
-  
+
 end
 
 module IssueIncludeCosts
@@ -96,9 +96,9 @@ module IssueIncludeCosts
     if costs_field.nil?
       costs_field = TimeEntryCustomField.where(:name => "Kosten/Stunde").first
     end
-    
+
     # subtotal not needed anymore
-    #subtotal = IssueSubtotal.where("issue_id = ? AND upto <= ?", self.id, upto).order("upto DESC").first    
+    #subtotal = IssueSubtotal.where("issue_id = ? AND upto <= ?", self.id, upto).order("upto DESC").first
     #if subtotal
     #  entries = TimeEntry.where("issue_id = ? AND spent_on <= ? AND spent_on > ?", self.id, upto, subtotal.upto)
     #  total += subtotal.amount
@@ -118,19 +118,19 @@ module IssueIncludeCosts
       end
       total += costs
     end
-    
+
     return total
   end
 end
 
 module VersionIncludeForecastDate
-  
+
   def self.included(base)
     base.class_eval do
       has_many :VersiondateForecast, :dependent => :destroy
     end
   end
-  
+
 end
 
 module VersionIncludeCustomProgress
@@ -138,6 +138,18 @@ module VersionIncludeCustomProgress
     base.class_eval do
       alias_method_chain :completed_percent, :custom_progress
     end
+  end
+
+  def done_ratio
+    sum = 0
+    amount = 0
+    fixed_issues.each do |i|
+      if i.root_id == i.id
+        sum += i.done_ratio
+        amount += 1
+      end
+    end
+    return amount > 0 ? (sum/amount).round() : 0
   end
 
   def completed_percent_with_custom_progress
