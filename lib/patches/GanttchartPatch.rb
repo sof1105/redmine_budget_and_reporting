@@ -197,8 +197,14 @@ module CriticalPath
 		all_issues.each do |id, issue|
 			dep = issue.all_dependent_issues
 			if !dep.empty?
-			 	max_enddate_issue = dep.max {|i,j| i.due_date <=> j.due_date}
-				if !issue.start_date.nil? && !max_enddate_issue.due_date.nil? && (max_enddate_issue.due_date - issue.start_date) > max_days
+			 	max_enddate_issue = dep.max do |i,j|
+					if !(i.due_date.nil? && j.due_date.nil?)
+						i.due_date <=> j.due_date
+					else
+						0
+					end
+				end
+				if !issue.start_date.nil? && !max_enddate_issue.nil? && !max_enddate_issue.due_date.nil? && (max_enddate_issue.due_date - issue.start_date) > max_days
 					start_issue = issue
 					end_issue = max_enddate_issue
 					max_days = end_issue.due_date - start_issue.start_date
