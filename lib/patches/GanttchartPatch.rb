@@ -181,7 +181,6 @@ module CriticalPath
 			end
 			options[:indent] -= (options[:indent_increment] * @issue_ancestors.size)
 		end
-	end
 
 	def critical_path_for_project(project)
 		#all_issues = {}
