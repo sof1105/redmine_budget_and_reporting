@@ -258,8 +258,10 @@ module CriticalPath
 					paths << current
 				else
 					# for every depent issue push new path on queue
-					rel[current.last.id].map {|relation| current.map{|i| i} << all_issues[relation.issue_to_id]}.each do |pa|
-						if !pa.nil?
+					rel[current.last.id].each do |relation|
+						n = all_issues[relation.issue_to_id]
+						if !n.nil?
+							pa = current.map{|i| i} << n
 							queue << pa
 						end
 					end
