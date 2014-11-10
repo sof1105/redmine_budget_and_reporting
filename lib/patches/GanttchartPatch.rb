@@ -266,7 +266,7 @@ module CriticalPath
 
 			max_path = paths.max_by {|i| i.last.due_date - i.first.start_date}
 
-			return max_path
+			return max_path || []
 		end
 	end
 
