@@ -64,7 +64,7 @@ wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :
     sheet.add_row([nil, nil, nil, nil, nil], :height => 14, :style => [style_empty_left, nil, nil, nil, style_empty_right])
 
     # add table heading
-    sheet.add_row([nil, "geplant", "Prognose", "IST-Wert", "Delta (1 Mon.)", "Ist-Aufwand", "Geplannter Aufwand", "Differenz", "Fertigstellungsgrad"], :height => 14, :style => style_tableheading)
+    sheet.add_row([nil, "geplant", "Prognose", "IST-Wert", "Delta (1 Mon.)", "Ist-Aufwand", "Geplanter Aufwand", "Differenz", "Fertigstellungsgrad"], :height => 14, :style => style_tableheading)
 
     # add budget information
     planned_budget = project.PlannedBudget.until_date(date).latest.try(:budget)
@@ -97,10 +97,10 @@ wb.add_worksheet(:name => "Projektreporting", :page_setup =>{:paper_size => 9, :
       delta = VersiondateForecast.delta(1, v.id).to_i
 
       # progress
-      spent_hours = v.spent_hours
-      estimated_hours = v.estimated_hours
-      hours_delta = estimated_hours - spent_hours
-      done_ratio = v.done_ratio
+      spent_hours = v.spent_hours.round(2)
+      estimated_hours = v.estimated_hours.round(2)
+      hours_delta = (estimated_hours - spent_hours).round(2)
+      done_ratio = v.done_ratio.round(2)
 
       sheet.add_row([name, planned_date, forecast_date, closed_date, delta, spent_hours, estimated_hours, hours_delta, done_ratio.to_s+"%"], :height => 14,
                         :style => [style_table_left, style_date, style_date, style_date, style_date_delta, style_table_normal, style_table_normal, style_table_normal, style_table_normal])
