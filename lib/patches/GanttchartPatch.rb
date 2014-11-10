@@ -182,91 +182,92 @@ module CriticalPath
 			options[:indent] -= (options[:indent_increment] * @issue_ancestors.size)
 		end
 
-	def critical_path_for_project(project)
-		#all_issues = {}
-		#project_issues(project).each {|i| all_issues[i.id] = i}
-		#rel = relations
+		def critical_path_for_project(project)
+			#all_issues = {}
+			#project_issues(project).each {|i| all_issues[i.id] = i}
+			#rel = relations
 
-		#max_days = 0
-		#critical_path = []
-		#start_issue = nil
-		#end_issue = nil
+			#max_days = 0
+			#critical_path = []
+			#start_issue = nil
+			#end_issue = nil
 
-		# find longest path
-		#all_issues.each do |id, issue|
-		#	dep = issue.all_dependent_issues
-		#	if !dep.empty?
-		#	 	max_enddate_issue = dep.reject {|i| i.due_date.nil?}.max { |i,j| i.due_date <=> j.due_date }
-		#		if !issue.start_date.nil? && !max_enddate_issue.nil? && !max_enddate_issue.due_date.nil? && (max_enddate_issue.due_date - issue.start_date) > max_days
-		#			start_issue = issue
-		#			end_issue = max_enddate_issue
-		#			max_days = end_issue.due_date - start_issue.start_date
-		#		end
-		#	end
-		#end
+			# find longest path
+			#all_issues.each do |id, issue|
+			#	dep = issue.all_dependent_issues
+			#	if !dep.empty?
+			#	 	max_enddate_issue = dep.reject {|i| i.due_date.nil?}.max { |i,j| i.due_date <=> j.due_date }
+			#		if !issue.start_date.nil? && !max_enddate_issue.nil? && !max_enddate_issue.due_date.nil? && (max_enddate_issue.due_date - issue.start_date) > max_days
+			#			start_issue = issue
+			#			end_issue = max_enddate_issue
+			#			max_days = end_issue.due_date - start_issue.start_date
+			#		end
+			#	end
+			#end
 
 
-		# find path between start_issue and end_issue using breadth first search?
-		# queue = [[start_issue]]
-		# path = [start_issue]
-		# current = nil
-		#
-		# if !start_issue.nil?
-		# 	while !queue.empty? do
-		#
-		# 		# get current path
-		# 		current = queue.shift
-		#
-		# 		# break if last in current path is end_issue
-		# 		if current.last.id == end_issue.id
-		# 			critical_path = current
-		# 			break
-		# 		end
-		#
-		# 		# for every depent issue push new path on queue
-		# 		rel[current.last.id].map {|relation| current.map{|i| i} << all_issues[relation.issue_to_id]}.each do |path|
-		# 			queue << path
-		# 		end
-		#
-		# 	end
-		# end
+			# find path between start_issue and end_issue using breadth first search?
+			# queue = [[start_issue]]
+			# path = [start_issue]
+			# current = nil
+			#
+			# if !start_issue.nil?
+			# 	while !queue.empty? do
+			#
+			# 		# get current path
+			# 		current = queue.shift
+			#
+			# 		# break if last in current path is end_issue
+			# 		if current.last.id == end_issue.id
+			# 			critical_path = current
+			# 			break
+			# 		end
+			#
+			# 		# for every depent issue push new path on queue
+			# 		rel[current.last.id].map {|relation| current.map{|i| i} << all_issues[relation.issue_to_id]}.each do |path|
+			# 			queue << path
+			# 		end
+			#
+			# 	end
+			# end
 
-		# get all issues with start and due date
-		all_issues = {}
-		project_issues(project).reject {|i| i.due_date.nil? || i.start_date.nil?}.each {|i| all_issues[i.id] = i}
-		rel = relations
+			# get all issues with start and due date
+			all_issues = {}
+			project_issues(project).reject {|i| i.due_date.nil? || i.start_date.nil?}.each {|i| all_issues[i.id] = i}
+			rel = relations
 
-		# find all starting issues
-		starting_issues = all_issues.map {|k,i| i}
-		rel.each do |id, relarray|
-			relarray.each do |r|
-				starting_issues.delete_if {|i| r.issue_to_id == i.id }
-			end
-		end
-
-		queue = starting_issues.map{|i| [i]}
-		paths = []
-		current = nil
-
-		while !queue.empty? do
-
-			# get current path
-			current = queue.shift
-
-			# if no more relations push current path to paths array
-			if rel[current.last.id].nil?
-				paths << current
-			else
-				# for every depent issue push new path on queue
-				rel[current.last.id].map {|relation| current.map{|i| i} << all_issues[relation.issue_to_id]}.each do |pa|
-					queue << pa
+			# find all starting issues
+			starting_issues = all_issues.map {|k,i| i}
+			rel.each do |id, relarray|
+				relarray.each do |r|
+					starting_issues.delete_if {|i| r.issue_to_id == i.id }
 				end
 			end
+
+			queue = starting_issues.map{|i| [i]}
+			paths = []
+			current = nil
+
+			while !queue.empty? do
+
+				# get current path
+				current = queue.shift
+
+				# if no more relations push current path to paths array
+				if rel[current.last.id].nil?
+					paths << current
+				else
+					# for every depent issue push new path on queue
+					rel[current.last.id].map {|relation| current.map{|i| i} << all_issues[relation.issue_to_id]}.each do |pa|
+						queue << pa
+					end
+				end
+			end
+
+			max_path = paths.max_by {|i| i.last.due_date - i.first.start_date}
+
+			return max_path
 		end
-
-		max_path = paths.max_by {|i| i.last.due_date - i.first.start_date}
-
-		return max_path
 	end
 
 end
