@@ -13,7 +13,7 @@
       );
     });
   });
-  
+
   function update_after_delete(url){
     $.get(url, function(data){
 	  $("#budget_floating").html(data);
@@ -37,7 +37,7 @@
     </tr>
     <tr>
       <td>Prognose <%= @overall_costs[:forecast].nil? ? "" : "vom " + I18n.l(@overall_costs[:forecast].planned_date) %>: </td>
-      <td><%= @overall_costs[:forecast].nil? ? "---" : 
+      <td><%= @overall_costs[:forecast].nil? ? "---" :
           number_to_currency(@overall_costs[:forecast].budget, :delimiter => ".") %></td>
     </tr>
     <tr>
@@ -79,7 +79,7 @@
   <% end %>
   </table>
   <br>
-  
+
   <% if not @project.children.empty? %>
   <br>
   <table class="issue_costs">
@@ -154,7 +154,7 @@
   <% end %>
   <tr>
     <td class="top bottom summed last big" colspan="4">
-      Gesamt: <%= number_to_currency(@project.costs_individual_items + children.sum{|c| c.costs_individual_items} , :delimiter => ".")%>
+      Gesamt: <%= number_to_currency(@project.costs_individual_items, :delimiter => ".")%>
     </td>
   </tr>
 </table>
@@ -164,7 +164,7 @@
    <span class="icon icon-copy"></span> Komplette Liste der Einzelkosten anzeigen
 </a>
 <% if User.current.admin? %>
-<%= link_to({:controller => "budget", :action => "delete_individual_for_project"}, 
+<%= link_to({:controller => "budget", :action => "delete_individual_for_project"},
             {:confirm => "Wirklich löschen?", :style => "margin-left:50px"}) do %>
   <span class="icon icon-del"></span>Einzelkosten für dieses Projekt löschen
 <% end %>
