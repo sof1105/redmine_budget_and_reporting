@@ -1,17 +1,17 @@
 class ReportingController < ApplicationController
   unloadable
   include BudgetCalculating
-  
+
   before_filter :set_project
   before_filter :authorize, :only => [:choose_gan_file, :upload_gan_file]
-  
+
   def index
     # show overview over actual project (depending on date)
     date = Date.today
     salary_customfield = UserCustomField.where(:name => "Stundenlohn").first
     version_customfield = VersionCustomField.where(:name => "Abgeschlossen").first
     role = Role.where(:name => "Projektleiter").first
-    
+
 
     # get the project informations
     @project_information = {}
@@ -22,7 +22,7 @@ class ReportingController < ApplicationController
     @project_information[:export] = export
     @project_information[:remark] = remark
     @project_information[:projectleader] = @project.users_by_role[role] || []
-    
+
 
     # get the informations of all versions of the project
     @version_informations = []
@@ -38,13 +38,13 @@ class ReportingController < ApplicationController
       @version_informations.append(temp)
     end
     @version_informations.sort! {|a,b| a[0].name <=> b[0].name}
-    
+
 
     # get the budget informations of the project
     @budget = []
     budget_issue = costs_for_all_issues(@project, date, salary_customfield)
     budget_individual = costs_for_individualitems(@project, date)
-    
+
     @budget.append(budget_issue)
     @budget.append(budget_individual)
     @budget.append(PlannedBudget.latest_budget_for(@project.id))
@@ -55,25 +55,38 @@ class ReportingController < ApplicationController
   def choose_export
     typ_id = ProjectCustomField.where(:name => "Projekttyp").first.try(:id)
     export_id = ProjectCustomField.where(:name => "Wird exportiert").first.try(:id)
+    status_id = ProjectCustomField.where(:name => "Status").first.try(:id)
     project_leader = Role.where(:name => "Projektleiter").first
     @project_list = {}
     @special_list = {}
 
     # all projects who should be exported
     projects = Project.all.select do |p|
-      p.custom_field_value(export_id) == "1"
+      is_exported = p.custom_field_value(export_id) == "1"
+      is_open = p.custom_field_value(status_id) !="Abgeschlossen"
+      is_exported && is_open && p.status == 1
     end
-    
+
     # all projects sorted by typ
     ProjectCustomField.find(typ_id).possible_values.each do |t|
       @project_list[t]=projects.select{|p| p.custom_field_value(typ_id) == t}
+      @project_list[t] = @project_list[t].sort{|a,b| a.name.upcase <=> b.name.upcase}
     end
 
     # all projects by current user
     @special_list["own_projects"] = User.current.projects_by_role[project_leader].map{|p| p.id}.join("','")
-    
+
     # all projects which are not closed
     @special_list["open_projects"] = projects.select{|p| p.status == 1}.map{|p| p.id}.join("','")
+
+    # all projects which have status "Aktiv"
+    @special_list["active_projects"] = projects.select{|p| p.custom_field_value(status_id) == "Aktiv"}.map{|p| p.id}.join("','")
+
+    # all projects which have status "Inaktiv"
+    @special_list["inactive_projects"] = projects.select{|p| p.custom_field_value(status_id) == "Inaktiv"}.map{|p| p.id}.join("','")
+
+    # all projects which have status "On Hold"
+    @special_list["onhold_projects"] = projects.select{|p| p.custom_field_value(status_id) == "On Hold"}.map{|p| p.id}.join("','")
 
   end
 
@@ -93,27 +106,27 @@ class ReportingController < ApplicationController
   def export_excel_all_projects
     @projects = Project.all.reject {|p| p.module_enabled?(:reporting).nil? || !p.active? }
     @projectleader_role = Role.where(:name => "Projektleiter").first
-    
-    render :xlsx => 'all_projects', :filename => "Projektreporting_alle.xlsx", :disposition => "attachment" 
+
+    render :xlsx => 'all_projects', :filename => "Projektreporting_alle.xlsx", :disposition => "attachment"
   end
-  
+
   def export_excel_single_project
     @projects = Project.where(:id => @project.id)
     @projectleader_role = Role.where(:name => "Projektleiter").first
-    
-    render :xlsx => 'all_projects', :filename => "Projektreporting_einzel.xlsx", :disposition => "attachment" 
+
+    render :xlsx => 'all_projects', :filename => "Projektreporting_einzel.xlsx", :disposition => "attachment"
   end
 
   def export_excel_own_projects
     @projectleader_role = Role.where(:name => "Projektleiter").first
-    @projects = Project.all.select do |p| 
+    @projects = Project.all.select do |p|
       projectleaders = p.users_by_role[@projectleader_role]
       p.module_enabled?(:reporting) && p.active? && projectleaders.try(:include?, User.current)
     end
-    
+
     render :xlsx => 'all_projects', :filename => "Projektreporting_einzel.xlsx", :disposition => "attachment"
   end
-  
+
   # upload new gan-file ---------------------------------
   def choose_gan_file
     @tracker_ids = @project.trackers
@@ -126,7 +139,7 @@ class ReportingController < ApplicationController
       @standard_id = @project.trackers.where(:name => "Aufgabe").first.id
     end
   end
-  
+
   def upload_gan_file
     # check for params
     unless params[:gan]
@@ -134,31 +147,31 @@ class ReportingController < ApplicationController
       redirect_to :controller => 'reporting', :action => 'choose_gan_file'
       return
     end
-    
+
     levels = params[:levels].nil? ? -1 : params[:levels].to_i
     delete_old = params[:delete_old].nil? ? false : true
     tracker = @project.trackers.where(:id => params[:tracker_id]).first || @project.trackers.first
     if tracker.nil?
       flash[:error] = "Es existiert kein Tracker fuer dieses Projekt."
       return
-    end    
-    
+    end
+
     # init nokogiri xml parser
     doc = Nokogiri::XML(params[:gan]) do |config|
       config.noblanks
     end
-    
+
     if !doc.errors.empty?
       flash[:error] = "Dateiformat stimmt nicht"
       puts doc.errors
       redirect_to :controller => "reporting", :action => "choose_gan_file"
       return
     end
-    
+
     # TODO: maybe validation check? version isn't allowed to be a child
     #       of another version
-    
-    
+
+
     # update all versions of current project
     versions = Version.where(:project_id => @project.id)
     issue_list = []
@@ -170,10 +183,10 @@ class ReportingController < ApplicationController
         end
       end
     end
-    
+
     # delete old issues if corresponding checkbox is true
     new_issue_ids = issue_list.map {|i| i.id}
-    
+
     if delete_old
       Issue.destroy_all(["project_id = ? AND id NOT IN (?)", @project.id, new_issue_ids])
     else
@@ -189,46 +202,46 @@ class ReportingController < ApplicationController
         issue.save
       end
     end
-    
+
     # TODO: update Issue Relations
-    
+
     flash[:notice] = "Gan-File wurde hochgeladen"
     if params[:back_url]
         redirect_to params[:back_url]
     end
     redirect_to :controller => 'gantts', :action => 'show'
   end
-  
-    
-  
+
+
+
   # --------------- Helper methods --------------
   def update_issue_from_xml(xml_node, version, tracker, issue_list, levels=0)
     # updates or creates issues which corresponds to xml_nod
     # to a maximum depth of levels (level 0 = only first level issue)
-    
+
     if !xml_node || xml_node.node_name != "task"
       return
     end
-    
+
     # get issues or create a new (could be more than one, subject is not unique)
-    corresponding_issues = Issue.where(:project_id => @project.id, 
+    corresponding_issues = Issue.where(:project_id => @project.id,
         :subject => xml_node["name"])
     if corresponding_issues.empty?
       corresponding_issues = [Issue.create({:project_id => @project.id, :subject => xml_node["name"],
           :author_id => User.current.id, :tracker_id => tracker.id})]
     end
-    
+
     # isolate issue from relations
     issues_ids = corresponding_issues.map {|i| i.id}
     relation_ids = IssueRelation.where("issue_from_id IN (?) OR issue_to_id IN (?)",
         issues_ids, issues_ids).map {|r| r.id}
     IssueRelation.destroy(relation_ids)
-    
+
     # find the new parent issue according to xml tree (can be either an issue or version)
     parent = Issue.where(:project_id => @project.id, :subject => xml_node.parent["name"]).first
     # (if parent = nil than its a root issue, because function moves down the xml tree
-    # recursively a parent issue should have been created before 
-     
+    # recursively a parent issue should have been created before
+
     corresponding_issues.each do |issue|
       # isolate issue from children
       issue.children.each do |i|
@@ -240,12 +253,12 @@ class ReportingController < ApplicationController
       # update issue with new attributs
       start_date = Date.strptime((xml_node["start"] || Date.today.to_s), "%Y-%m-%d")
       due_date = start_date + (xml_node["duration"].to_i || 1)
-      
+
       issue.start_date = start_date
       issue.due_date = due_date
       issue.parent_issue_id = (parent.nil?) ? nil : parent.id
       issue.fixed_version_id = version
-      
+
       unless issue.save
         issue.errors.each do |e|
           logger.info(e.to_s + "=>" + issue.errors[e].to_s)
@@ -253,7 +266,7 @@ class ReportingController < ApplicationController
       end
       journal = issue.init_journal(User.current, "Update mit Gan-File")
       journal.save
-      
+
       # append issue from issue_list
       issue_list.append(issue)
     end
@@ -267,20 +280,20 @@ class ReportingController < ApplicationController
       update_issue_from_xml(child, version, tracker, issue_list, levels)
     end
   end
-  
+
   def valid_date(date_string)
     # uses date string with following format:
     #     "2012-10-25"
     # and returns Date object of nil depending if format is valid
-    
+
     if date_string.blank?
       return nil
     end
-    
+
     if date_string && date_string.split("-").first.length != 4
       return nil
     end
-    
+
     begin
       return date = Date.strptime(date_string, "%Y-%m-%d")
     rescue
@@ -296,8 +309,8 @@ class ReportingController < ApplicationController
         @project = nil
       end
     end
-    
-    unless @project  
+
+    unless @project
       flash[:error] = "Projekt nicht gefunden"
       render_404
       return

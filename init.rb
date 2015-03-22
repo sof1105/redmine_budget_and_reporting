@@ -2,17 +2,17 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
   name 'Redmine Budget And Reporting plugin'
   author 'Moritz Hamann'
   description 'Reports and Costs statistics'
-  version '0.0.4'  
+  version '0.0.4'
 
     # only create field if CustumField table already exists
-    if ActiveRecord::Base.connection.table_exists? 'custom_fields'   
-        
+    if ActiveRecord::Base.connection.table_exists? 'custom_fields'
+
         # make sure UserCustomField for salary exists
         if UserCustomField.where(:name => "Stundenlohn").empty?
           UserCustomField.create({:type => "UserCustomField", :name => "Stundenlohn", :field_format => "float",
                                   :default_value => "50", :is_required => true, :editable => false, :visible => false})
         end
-        
+
         # add weeklyhours to user
         if UserCustomField.where(:name => "Arbeitszeit/Woche").empty?
 					UserCustomField.create({:type => "UserCustomField", :name => "Wochenstunden", :field_format => "float",
@@ -43,8 +43,14 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
           ProjectCustomField.create({:type => "ProjectCustomField", :name => "Bemerkung Projektreporting", :field_format => "text",
                                      :visible => true, :editable => true})
         end
+
+        # add status customfield if it not already exists
+        if ProjectCustomField.where(:name => "Status").empty?
+          ProjectCustomField.create({:name => "Status", :field_format => "list", :possible_values => ["Aktiv", "Inaktiv", "Abgeschlossen", "On Hold"],
+            :default_value => "Aktiv", :editable => true, :multiple => false, :require => true})
+        end
     end
-  
+
   project_module :reporting do
     permission :reporting, {:reporting => :index}, :public => true
     permission :edit_forecasts, {:forecast => [:new_versiondate_forecast, :delete_versiondate_forecast,
@@ -52,20 +58,20 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
                                                :new_budget_plan, :delete_budget_plan ],
                                  :reporting => [:choose_gan_file, :upload_gan_file]}
   end
-  
+
   menu :project_menu, :reporting, {:controller => 'reporting', :action => 'index'},
        :caption => 'Reporting', :param => :project_id
-  
+
   require_dependency 'gantchart_spenthours/hooks'
   require_dependency 'sidebar/hooks'
   require_dependency 'issue_target_hours/hooks'
-  
+
   require 'nokogiri'
   require 'axlsx_rails'
   require 'dispatcher' unless Rails::VERSION::MAJOR >= 3
   require 'prawn'
   require 'prawn/measurement_extensions'
-  
+
 	if Rails::VERSION::MAJOR >= 3
 		ActionDispatch::Callbacks.to_prepare do
 		  # use require_dependency if you plan to utilize development mode
@@ -81,5 +87,5 @@ Redmine::Plugin.register :redmine_budget_and_reporting do
       require 'patches/TargetHoursInclude'
 		end
 	end
-  
+
 end

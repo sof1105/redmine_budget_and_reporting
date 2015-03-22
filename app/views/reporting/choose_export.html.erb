@@ -29,7 +29,7 @@
     }
   }
 
-  
+
 </script>
 <% remark_id = ProjectCustomField.where(:name => "Bemerkung Projektreporting").first.try(:id) %>
 <%= form_tag({:controller => "reporting", :action => "export_excel_variable_projects"}, :id => "export_form", :method => :get) do %>
@@ -43,14 +43,14 @@
   <% projects.each_with_index do |p, i| %>
   <tr class="<%= i==0 ? 'report_entry_first' : '' %> <%= i==projects.length-1 ? 'report_entry_last' : '' %>" >
     <td class="report_container_entry">
-      <%= check_box_tag "export["+p.id.to_s+"]", 1, false, :project_typ => typ.to_s, 
+      <%= check_box_tag "export["+p.id.to_s+"]", 1, false, :project_typ => typ.to_s,
       :onchange => "uncheck_typ_if_unchecked($(this))", :style => "float:left" %>
       <label for="export_<%= p.id %>">
 	<%= p.name %>
       </label>
     </td>
     <td>
-      <%= p.status == 1 ? "offen" : "abgschlossen" %>
+      <%= p.status == 1 ? "offen" : "abgeschlossen" %>
     </td>
     <td style="font-style:italic;">
       <%= p.custom_field_value(remark_id) %>
@@ -66,8 +66,16 @@
   <%= label_tag "own_projects", "Eigene Projekte" %>
 </div>
 <div class="report_container">
-  <%= check_box_tag "open_projects", 1, false, :onchange => ("toggle_all_from_list($(this), ['"+@special_list["open_projects"]+"'])").html_safe %>
-  <%= label_tag "open_projects", "Offene Projekte" %>
+  <%= check_box_tag "active_projects", 1, false, :onchange => ("toggle_all_from_list($(this), ['"+@special_list["active_projects"]+"'])").html_safe %>
+  <%= label_tag "active_projects", "Aktive Projekte" %>
+</div>
+<div class="report_container">
+  <%= check_box_tag "inactive_projects", 1, false, :onchange => ("toggle_all_from_list($(this), ['"+@special_list["inactive_projects"]+"'])").html_safe %>
+  <%= label_tag "inactive_projects", "Inaktive Projekte" %>
+</div>
+<div class="report_container">
+  <%= check_box_tag "onhold_projects", 1, false, :onchange => ("toggle_all_from_list($(this), ['"+@special_list["onhold_projects"]+"'])").html_safe %>
+  <%= label_tag "onhold_projects", "On Hold Projekte" %>
 </div>
 <br>
 <div class="report_container">
