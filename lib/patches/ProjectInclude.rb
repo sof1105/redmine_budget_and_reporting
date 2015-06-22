@@ -114,7 +114,7 @@ module IssueIncludeCosts
         costs_field_value = e.custom_field_value(costs_field.id)
         costs = ((costs_field_value.blank? ? nil : costs_field_value) || User.find(e.user_id).custom_field_value(salary_customfield.id) || 0.0).to_f * e.hours
       else
-        costs = (User.find(e.user_id).custom_field_value(salary_customfield.id) || 0.0).to_f * entry.hours
+        costs = (User.find(e.user_id).custom_field_value(salary_customfield.id) || 0.0).to_f * e.hours
       end
       total += costs
     end
